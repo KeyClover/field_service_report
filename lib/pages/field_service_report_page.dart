@@ -1,5 +1,6 @@
-
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:hexcolor/hexcolor.dart';
 
 class FieldServiceReportPage1 extends StatefulWidget {
   @override
@@ -14,10 +15,17 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   bool isRemoveChecked = false;
   bool isOtherChecked = false;
 
+  bool isMagneticCardReader = false;
+  bool isFuelSensor = false;
+  bool isTemperatureSensor = false;
+  bool isOnOffSensor = false;
+  bool isOtherChecked2 = false;
+
   // Store API data for customer and vehicle info
   Map<String, dynamic> customerData = {};
   List<Map<String, String>> vehicleData = [];
 
+  TextEditingController otherController = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -32,10 +40,13 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
       'contact': 'johndoe@example.com',
       'address': '123 Main St, Springfield',
       'tel': '123-456-7890',
+      'customer email': 'sample@gmail.com',
       'date': '2024-09-01',
       'departureTime': '08:00 AM',
       'arrivalTime': '10:00 AM',
-      'caseNo': '1'
+      'caseNo': '1',
+      'remark':
+          'ส่งเซนเซอร์ลนยางตัวใหม่ จำนวน 6 ตัว  เพื่อเปลี่ยนให้กับ  บริษัท รถเจาะไทย จำกัด MA-001 (CAT740-01) ติดต่อช่างหน้างาน ช่างไพโรจน์ 0936697041 \nที่อยู่ \nคุณสมคิด ปกครอง  086 272 2278\n123/27\nม.3 ต.บางนอน\nอ.เมือง จ.ระนอง 85000'
     };
 
     // Mocking vehicle data API response
@@ -80,68 +91,65 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Field Service Report: (Number)'),
+        title: const Text(
+          'Field Service: (Number)',
+          style: TextStyle(fontSize: 20, color: Colors.white),
+        ),
+        backgroundColor: HexColor("#2e3150"),
       ),
       body: SingleChildScrollView(
+        
         padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Customer Information Section - Auto-filled from API
-            _buildCustomerInfoSection(),
+            _buildTextField('Customer', customerData['customer']),
+            _buildTextField('Contact', customerData['contact']),
+            _buildTextField('Address', customerData['address']),
+            _buildTextField('Tel', customerData['tel']),
+            _buildTextField('Email', customerData['customer email']),
 
             SizedBox(height: 16),
+
+            GridView(
+              shrinkWrap: true,
+              physics:
+                  const NeverScrollableScrollPhysics(), // Prevent scroll within the grid
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 3, // Adjusts the height of grid items
+                crossAxisSpacing: 10.0,
+                mainAxisSpacing: 10.0,
+              ),
+              children: [
+                _buildGridField('Date', customerData['date']),
+                _buildGridField('Case No.', customerData['caseNo']),
+                _buildGridField('Arrival Time', customerData['arrivalTime']),
+                _buildGridField(
+                    'Departure Time', customerData['departureTime']),
+              ],
+            ),
 
             // Checkbox Section for user input
             _buildCheckboxSection(),
 
             SizedBox(height: 16),
 
+            _buildCheckboxSection2(),
+
+            SizedBox(height: 16),
+
             // Vehicle Information Section - Auto-filled from API
             _buildVehicleInfoSection(),
 
-            SizedBox(height: 24),
+            SizedBox(height: 16),
 
-            // Next Button
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => FieldServiceReportPage2()),
-                  );
-                },
-                child: Text('Next'),
-              ),
-            ),
+            _buildTextField('Remark', customerData['remark']),
           ],
         ),
       ),
-    );
-  }
-
-  // Build customer info section using fetched API data
-  Widget _buildCustomerInfoSection() {
-    return Container(
-      padding: EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Customer: ${customerData['customer'] ?? ''}'),
-          Text('Contact: ${customerData['contact'] ?? ''}'),
-          Text('Address: ${customerData['address'] ?? ''}'),
-          Text('Tel: ${customerData['tel'] ?? ''}'),
-          Text('Date: ${customerData['date'] ?? ''}'),
-          Text('Departure Time: ${customerData['departureTime'] ?? ''}'),
-          Text('Arrival Time: ${customerData['arrivalTime'] ?? ''}'),
-          Text('Case No: ${customerData['caseNo']?? ''}')
-        ],
-      ),
+      backgroundColor: Colors.white,
     );
   }
 
@@ -150,7 +158,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     return Container(
       padding: EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: Colors.white,
         borderRadius: BorderRadius.circular(8.0),
       ),
       child: Column(
@@ -193,6 +201,103 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               });
             },
           ),
+          if (isOtherChecked) // Conditionally display text field for "Other"
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: TextFormField(
+                controller: otherController,
+                maxLines: null,
+                decoration: InputDecoration(
+                  labelText: 'Specify Other',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCheckboxSection2() {
+    return Container(
+      padding: EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Tools', style: TextStyle(fontWeight: FontWeight.bold)),
+          CheckboxListTile(
+            title: Text('Magnetic Card Reader'),
+            value: isMagneticCardReader,
+            onChanged: (bool? value) {
+              setState(() {
+                isMagneticCardReader = value ?? false;
+              });
+            },
+          ),
+          CheckboxListTile(
+            title: Text('Fuel Sensor'),
+            value: isFuelSensor,
+            onChanged: (bool? value) {
+              setState(() {
+                isFuelSensor = value ?? false;
+              });
+            },
+          ),
+          CheckboxListTile(
+            title: Text('Temperature Sensor'),
+            value: isTemperatureSensor,
+            onChanged: (bool? value) {
+              setState(() {
+                isTemperatureSensor = value ?? false;
+              });
+            },
+          ),
+          CheckboxListTile(
+            title: Text('On/Off Sensor'),
+            value: isOnOffSensor,
+            onChanged: (bool? value) {
+              setState(() {
+                isOnOffSensor = value ?? false;
+              });
+            },
+          ),
+          if (isOnOffSensor) // Conditionally display text field for "Other"
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: TextFormField(
+                maxLines: null,
+                controller: otherController,
+                decoration: InputDecoration(
+                  labelText: 'Specify Other',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
+          CheckboxListTile(
+            title: Text('Other'),
+            value: isOtherChecked2,
+            onChanged: (bool? value) {
+              setState(() {
+                isOtherChecked2 = value ?? false;
+              });
+            },
+          ),
+          if (isOtherChecked2) // Conditionally display text field for "Other"
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: TextFormField(
+                maxLines: null,
+                controller: otherController,
+                decoration: InputDecoration(
+                  labelText: 'Specify Other',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -206,48 +311,41 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
           margin: EdgeInsets.symmetric(vertical: 16.0),
           padding: EdgeInsets.all(16.0),
           decoration: BoxDecoration(
-            color: Colors.grey[200],
+            color: Colors.white,
             borderRadius: BorderRadius.circular(8.0),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Vehicle ID: ${vehicle['vehicleId'] ?? ''}'),
-              Text('Chassis: ${vehicle['chassis'] ?? ''}'),
-              Text('Brand: ${vehicle['brand'] ?? ''}'),
-              Text('Type: ${vehicle['type'] ?? ''}'),
-              Text('IMEI: ${vehicle['imei'] ?? ''}'),
-              Text('SIM: ${vehicle['sim'] ?? ''}'),
-              Text('Model: ${vehicle['model'] ?? ''}'),
-              Text('Action: ${vehicle['action'] ?? ''}'),
+             _buildVehicleField('Vehicle ID', vehicle['vehicleId']),
+            _buildVehicleField('Chassis', vehicle['chassis']),
+            _buildVehicleField('Brand', vehicle['brand']),
+            _buildVehicleField('Type', vehicle['type']),
+            _buildVehicleField('IMEI', vehicle['imei']),
+            _buildVehicleField('SIM', vehicle['sim']),
+            _buildVehicleField('Model', vehicle['model']),
+            _buildVehicleField('Action', vehicle['action']),
             ],
           ),
         );
       }).toList(),
     );
   }
-}
 
-// Page 2 placeholder
-class FieldServiceReportPage2 extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Field Service Report: (Number)'),
-      ),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: Text('Go Back'),
+  Widget _buildVehicleField(String label, String? value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: TextFormField(
+        maxLines: null,
+        readOnly: true,
+        initialValue: value ?? '',
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
         ),
       ),
     );
   }
-}
-
 
   Widget _buildTextField(String label, String value) {
     return Padding(
@@ -255,6 +353,7 @@ class FieldServiceReportPage2 extends StatelessWidget {
       child: TextFormField(
         initialValue: value,
         readOnly: true,
+        maxLines: null,
         decoration: InputDecoration(
           labelText: label,
           border: OutlineInputBorder(),
@@ -263,3 +362,15 @@ class FieldServiceReportPage2 extends StatelessWidget {
     );
   }
 
+  Widget _buildGridField(String label, String value) {
+    return TextFormField(
+      initialValue: value,
+      readOnly: true,
+      maxLines: null,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(),
+      ),
+    );
+  }
+}
