@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hexcolor/hexcolor.dart';
+import 'package:signature/signature.dart';
 
 class FieldServiceReportPage1 extends StatefulWidget {
   @override
@@ -31,6 +32,18 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     super.initState();
     fetchDataFromApi();
   }
+
+  final SignatureController _signatureController = SignatureController(
+    penStrokeWidth: 2,
+    penColor: Colors.black,
+    exportBackgroundColor: Colors.white,
+  );
+
+  final SignatureController _customerSignatureController = SignatureController(
+    penStrokeWidth: 2,
+    penColor: Colors.black,
+    exportBackgroundColor: Colors.white,
+  );
 
   // Simulating API data fetching
   Future<void> fetchDataFromApi() async {
@@ -98,7 +111,6 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
         backgroundColor: HexColor("#2e3150"),
       ),
       body: SingleChildScrollView(
-        
         padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,6 +158,14 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
             SizedBox(height: 16),
 
             _buildTextField('Remark', customerData['remark']),
+
+            SizedBox(height: 16),
+
+            _buildSignatureSection(),
+
+            SizedBox(height: 16,),
+
+            _buildSignatureSectionForCustomer(),
           ],
         ),
       ),
@@ -317,14 +337,14 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-             _buildVehicleField('Vehicle ID', vehicle['vehicleId']),
-            _buildVehicleField('Chassis', vehicle['chassis']),
-            _buildVehicleField('Brand', vehicle['brand']),
-            _buildVehicleField('Type', vehicle['type']),
-            _buildVehicleField('IMEI', vehicle['imei']),
-            _buildVehicleField('SIM', vehicle['sim']),
-            _buildVehicleField('Model', vehicle['model']),
-            _buildVehicleField('Action', vehicle['action']),
+              _buildVehicleField('Vehicle ID', vehicle['vehicleId']),
+              _buildVehicleField('Chassis', vehicle['chassis']),
+              _buildVehicleField('Brand', vehicle['brand']),
+              _buildVehicleField('Type', vehicle['type']),
+              _buildVehicleField('IMEI', vehicle['imei']),
+              _buildVehicleField('SIM', vehicle['sim']),
+              _buildVehicleField('Model', vehicle['model']),
+              _buildVehicleField('Action', vehicle['action']),
             ],
           ),
         );
@@ -371,6 +391,76 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
         labelText: label,
         border: OutlineInputBorder(),
       ),
+    );
+  }
+
+  // Signature Pad and Actions for Field Service Engineer
+  Widget _buildSignatureSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Field Service Engineer Signature',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 8),
+        Container(
+          height: 150,
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Signature(
+            controller: _signatureController,
+            backgroundColor: Colors.white,
+          ),
+        ),
+        SizedBox(height: 16),
+        Row(
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                _signatureController.clear(); // Clear the signature
+              },
+              child: Text('Clear Signature'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSignatureSectionForCustomer() {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Service Completed',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 8),
+        Container(
+          height: 150,
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Signature(
+            controller: _customerSignatureController,
+            backgroundColor: Colors.white,
+          ),
+        ),
+        SizedBox(height: 16),
+        Row(
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                _customerSignatureController.clear(); // Clear the signature
+              },
+              child: Text('Clear Signature'),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
