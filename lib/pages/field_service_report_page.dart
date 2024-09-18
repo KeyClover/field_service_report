@@ -49,8 +49,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   Future<void> fetchDataFromApi() async {
     // Mocking customer data API response
     customerData = {
-      'customer': 'John Doe',
-      'contact': 'johndoe@example.com',
+      'customer': 'Mingming',
+      'contact': 'Mingming@example.com',
       'address': '123 Main St, Springfield',
       'tel': '123-456-7890',
       'customer email': 'sample@gmail.com',
@@ -111,62 +111,77 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
         backgroundColor: HexColor("#2e3150"),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Customer Information Section - Auto-filled from API
-            _buildTextField('Customer', customerData['customer']),
-            _buildTextField('Contact', customerData['contact']),
-            _buildTextField('Address', customerData['address']),
-            _buildTextField('Tel', customerData['tel']),
-            _buildTextField('Email', customerData['customer email']),
-
-            SizedBox(height: 16),
-
-            GridView(
-              shrinkWrap: true,
-              physics:
-                  const NeverScrollableScrollPhysics(), // Prevent scroll within the grid
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                childAspectRatio: 3, // Adjusts the height of grid items
-                crossAxisSpacing: 10.0,
-                mainAxisSpacing: 10.0,
-              ),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Container(
+            decoration: BoxDecoration(
+              color: HexColor("E0E0E0"), // Inside container color
+              borderRadius: BorderRadius.circular(20),
+            ),
+            padding: EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildGridField('Date', customerData['date']),
-                _buildGridField('Case No.', customerData['caseNo']),
-                _buildGridField('Arrival Time', customerData['arrivalTime']),
-                _buildGridField(
-                    'Departure Time', customerData['departureTime']),
+                // Customer Information Section - Auto-filled from API
+                _buildTextField('Customer', customerData['customer']),
+                _buildTextField('Contact', customerData['contact']),
+                _buildTextField('Address', customerData['address']),
+                _buildTextField('Tel', customerData['tel']),
+                _buildTextField('Email', customerData['customer email']),
+
+                SizedBox(height: 16),
+
+                GridView(
+                  shrinkWrap: true,
+                  physics:
+                      const NeverScrollableScrollPhysics(), // Prevent scroll within the grid
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 2, // Adjusts the height of grid items
+                    crossAxisSpacing: 10.0,
+                    mainAxisSpacing: 10.0,
+                  ),
+                  children: [
+                    _buildGridField('Date', customerData['date']),
+                    _buildGridField('Case No.', customerData['caseNo']),
+                    _buildGridField(
+                        'Arrival Time', customerData['arrivalTime']),
+                    _buildGridField(
+                        'Departure Time', customerData['departureTime']),
+                  ],
+                ),
+
+                SizedBox(
+                  height: 16,
+                ),
+                // Checkbox Section for user input
+                _buildCheckboxSection(),
+
+                SizedBox(height: 16),
+
+                _buildCheckboxSection2(),
+
+                SizedBox(height: 16),
+
+                // Vehicle Information Section - Auto-filled from API
+                _buildVehicleInfoSection(),
+
+                SizedBox(height: 16),
+
+                _buildTextField('Remark', customerData['remark']),
+
+                SizedBox(height: 16),
+
+                _buildSignatureSection(),
+
+                SizedBox(
+                  height: 16,
+                ),
+
+                _buildSignatureSectionForCustomer(),
               ],
             ),
-
-            // Checkbox Section for user input
-            _buildCheckboxSection(),
-
-            SizedBox(height: 16),
-
-            _buildCheckboxSection2(),
-
-            SizedBox(height: 16),
-
-            // Vehicle Information Section - Auto-filled from API
-            _buildVehicleInfoSection(),
-
-            SizedBox(height: 16),
-
-            _buildTextField('Remark', customerData['remark']),
-
-            SizedBox(height: 16),
-
-            _buildSignatureSection(),
-
-            SizedBox(height: 16,),
-
-            _buildSignatureSectionForCustomer(),
-          ],
+          ),
         ),
       ),
       backgroundColor: Colors.white,
@@ -370,27 +385,71 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   Widget _buildTextField(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextFormField(
-        initialValue: value,
-        readOnly: true,
-        maxLines: null,
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(),
-        ),
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start, // Align the label to the left
+        children: [
+          // Custom Label on Top of the TextFormField
+          Text(
+            label, // Label is shown above the TextFormField
+            style: TextStyle(
+              fontSize: 16, // Adjust the size of the label
+              fontWeight: FontWeight.w500,
+              color: Colors.grey[700],
+            ),
+          ),
+          SizedBox(height: 5), // Add some space between the label and the input
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white, // Inside container color
+              borderRadius:
+                  BorderRadius.circular(8.0), // Optional rounded corners
+            ),
+            child: TextFormField(
+              initialValue: value,
+              readOnly: true, // Make it read-only if necessary
+              maxLines: null, // Allow multi-line input if needed
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                contentPadding: EdgeInsets.symmetric(
+                    vertical: 20,
+                    horizontal: 16), // Adjust padding inside the field
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildGridField(String label, String value) {
-    return TextFormField(
-      initialValue: value,
-      readOnly: true,
-      maxLines: null,
-      decoration: InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(),
-      ),
+    return Column(
+       crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight:FontWeight.w500,
+            color: Colors.grey[700] ),
+        ),
+        
+        Container(
+          decoration: BoxDecoration(
+            color: HexColor("FFFFFF"),
+          ),
+          child: TextFormField(
+            initialValue: value,
+            readOnly: true,
+            maxLines: null,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -431,7 +490,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   }
 
   Widget _buildSignatureSectionForCustomer() {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
           'Service Completed',
