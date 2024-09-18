@@ -25,7 +25,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   // Store API data for customer and vehicle info
   Map<String, dynamic> customerData = {};
   List<Map<String, String>> vehicleData = [];
-
+  int  caseID = 0;
   TextEditingController otherController = TextEditingController();
   @override
   void initState() {
@@ -96,6 +96,9 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
       }
     ];
 
+     caseID = 
+         41715;
+
     // Update state to display fetched data
     setState(() {});
   }
@@ -104,8 +107,9 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Field Service: (Number)',
+        title:  Text(
+          'Field Service : ${caseID} ',
+          
           style: TextStyle(fontSize: 20, color: Colors.white),
         ),
         backgroundColor: HexColor("#2e3150"),
