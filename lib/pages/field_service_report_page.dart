@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../database/data_result_api.dart';
 import '../models/field_service_model.dart';
+import '../database/field_service_report_SQLite.dart';
 
 class FieldServiceReportPage1 extends StatefulWidget {
   @override
@@ -29,13 +30,56 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   // Store API data for customer and vehicle info
   Map<String, dynamic> customerData = {};
   List<Map<String, String>> vehicleData = [];
-  int  CaseID = 0;
+  int CaseID = 0;
   TextEditingController otherController = TextEditingController();
   TextEditingController otherController2 = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     fetchDataFromApi();
+  }
+
+  @override
+  void dispose() {
+    otherController.dispose();
+    otherController2.dispose();
+    super.dispose();
+  }
+
+  Future<void> loadServiceData() async {
+    final data = await FieldServiceDatabase.instance.getServiceData(CaseID);
+    setState(() {
+      isInstallationChecked = data['is_installation'] == 1;
+      isReparationChecked = data['is_reparation'] == 1;
+      isRemoveChecked = data['is_remove'] == 1;
+      isOtherChecked = data['is_other'] == 1;
+      otherController.text = data['other_text'] ?? '';
+
+      isMagneticCardReader = data['is_magnetic_card_reader'] == 1;
+      isFuelSensor = data['is_fuel_sensor'] == 1;
+      isTemperatureSensor = data['is_temperature_sensor'] == 1;
+      isOnOffSensor = data['is_on_off_sensor'] == 1;
+      isOtherChecked2 = data['is_other2'] == 1;
+      otherController2.text = data['other_text2'] ?? '';
+    });
+  }
+
+  Future<void> saveServiceData() async {
+    final data = {
+      'is_installation': isInstallationChecked ? 1 : 0,
+      'is_reparation': isReparationChecked ? 1 : 0,
+      'is_remove': isRemoveChecked ? 1 : 0,
+      'is_other': isOtherChecked ? 1 : 0,
+      'other_text': otherController.text,
+      'is_magnetic_card_reader': isMagneticCardReader ? 1 : 0,
+      'is_fuel_sensor': isFuelSensor ? 1 : 0,
+      'is_temperature_sensor': isTemperatureSensor ? 1 : 0,
+      'is_on_off_sensor': isOnOffSensor ? 1 : 0,
+      'is_other2': isOtherChecked2 ? 1 : 0,
+      'other_text2': otherController2.text,
+    };
+    await FieldServiceDatabase.instance.saveServiceData(CaseID, data);
   }
 
   final SignatureController _signatureController = SignatureController(
@@ -53,7 +97,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   Future<void> fetchDataFromApi() async {
     try {
       final restDataSource = RestDataSource();
-      final url = restDataSource.GetAllCasebyId(CaseID: 40003);
+      final url = restDataSource.GetAllCasebyId(CaseID: 40001); // noted: I use 40003, 40002, 40001 as an example
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
@@ -68,9 +112,9 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
             customerData = {
               'customer': caseData.customer ?? '',
               'contact': caseData.contact ?? '',
-              'address': caseData.address?? '', 
-              'tel': caseData.contactPhone?? '', 
-              'customer email': caseData.contactEmail?? '', 
+              'address': caseData.address ?? '',
+              'tel': caseData.contactPhone ?? '',
+              'customer email': caseData.contactEmail ?? '',
               'date': caseData.openDateTime ?? '',
               'departureTime': caseData.endTime ?? '',
               'arrivalTime': caseData.beginTime ?? '',
@@ -81,15 +125,18 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
 
           vehicleData = testModel.problem?.map((problem) => {
             'vehicleId': problem.vehicleId?.toString() ?? '',
-            'chassis': problem.chassisNo??'', 
-            'brand': problem.catalogName??'', 
+            'chassis': problem.chassisNo ?? '',
+            'brand': problem.catalogName ?? '',
             'type': problem.type ?? '',
-            'imei': problem.mobileUnitIncomeId?.toString()?? '',
-            'sim': problem.mobileUnitSimIncomeId?.toString()??'', 
-            'model': problem.modelName??'', 
+            'imei': problem.mobileUnitIncomeId?.toString() ?? '',
+            'sim': problem.mobileUnitSimIncomeId?.toString() ?? '',
+            'model': problem.modelName ?? '',
             'action': problem.mainProcessName ?? '',
           }).toList() ?? [];
         });
+
+        // Load saved service data after fetching API data
+        await loadServiceData();
       } else {
         print('Failed to load data: ${response.statusCode}');
       }
@@ -206,6 +253,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               setState(() {
                 isInstallationChecked = value ?? false;
               });
+              saveServiceData();
             },
           ),
           CheckboxListTile(
@@ -215,6 +263,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               setState(() {
                 isReparationChecked = value ?? false;
               });
+              saveServiceData();
             },
           ),
           CheckboxListTile(
@@ -224,6 +273,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               setState(() {
                 isRemoveChecked = value ?? false;
               });
+              saveServiceData();
             },
           ),
           CheckboxListTile(
@@ -233,6 +283,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               setState(() {
                 isOtherChecked = value ?? false;
               });
+              saveServiceData();
             },
           ),
           if (isOtherChecked) // Conditionally display text field for "Other"
@@ -245,6 +296,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                   labelText: 'Specify Other',
                   border: OutlineInputBorder(),
                 ),
+                onChanged: (_) => saveServiceData(),
               ),
             ),
         ],
@@ -270,6 +322,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               setState(() {
                 isMagneticCardReader = value ?? false;
               });
+              saveServiceData();
             },
           ),
           CheckboxListTile(
@@ -279,6 +332,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               setState(() {
                 isFuelSensor = value ?? false;
               });
+              saveServiceData();
             },
           ),
           CheckboxListTile(
@@ -288,6 +342,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               setState(() {
                 isTemperatureSensor = value ?? false;
               });
+              saveServiceData();
             },
           ),
           CheckboxListTile(
@@ -297,20 +352,9 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               setState(() {
                 isOnOffSensor = value ?? false;
               });
+              saveServiceData();
             },
           ),
-          if (isOnOffSensor) // Conditionally display text field for "Other"
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: TextFormField(
-                maxLines: null,
-                controller: otherController,
-                decoration: InputDecoration(
-                  labelText: 'Specify Other',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
           CheckboxListTile(
             title: Text('Other'),
             value: isOtherChecked2,
@@ -318,6 +362,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               setState(() {
                 isOtherChecked2 = value ?? false;
               });
+              saveServiceData();
             },
           ),
           if (isOtherChecked2) // Conditionally display text field for "Other"
@@ -330,6 +375,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                   labelText: 'Specify Other',
                   border: OutlineInputBorder(),
                 ),
+                onChanged: (_) => saveServiceData(),
               ),
             ),
         ],
@@ -339,18 +385,24 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
 
   // Build vehicle info section with dynamic fields based on API data
   Widget _buildVehicleInfoSection() {
+    final validVehicles = vehicleData.where((vehicle) => vehicle['vehicleId'] != '0').toList();
+
+    if (validVehicles.isEmpty) {
+      return SizedBox.shrink(); // Return an empty widget if there are no valid vehicles
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (vehicleData.length > 1)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16.0),
+        if (validVehicles.length > 1)
+          const Padding(
+            padding: EdgeInsets.only(bottom: 16.0),
             child: Text(
               'Multiple Vehicles',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
-        ...vehicleData.asMap().entries.map((entry) {
+        ...validVehicles.asMap().entries.map((entry) {
           int index = entry.key;
           Map<String, String> vehicle = entry.value;
           return Container(
@@ -364,7 +416,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (vehicleData.length > 1)
+                if (validVehicles.length > 1)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: Text(
