@@ -40,6 +40,11 @@ class Problem {
     int? problemId;
     String? problemItem;
     int? vehicleId;
+    String? chassisNo;
+    String? catalogName;
+    int? mobileUnitIncomeId;
+    int? mobileUnitSimIncomeId;
+    String? modelName;
     int? caseId;
     int? mainProcessId;
     int? subProcessId;
@@ -54,7 +59,7 @@ class Problem {
     int? recoveryTypeId;
     int? exceptRepeatRepairFlag;
     String? remark;
-    dynamic projectId;
+    int? projectId;
     int? statusId;
     DateTime? createDate;
     int? createBy;
@@ -62,7 +67,7 @@ class Problem {
     int? modifyBy;
     String? appointmentDateTime;
     String? mainProcessName;
-    dynamic licenseNo;
+    String? licenseNo;
     String? type;
     String? status;
 
@@ -70,6 +75,11 @@ class Problem {
         this.problemId,
         this.problemItem,
         this.vehicleId,
+        this.chassisNo,
+        this.catalogName,
+        this.mobileUnitIncomeId,
+        this.mobileUnitSimIncomeId,
+        this.modelName,
         this.caseId,
         this.mainProcessId,
         this.subProcessId,
@@ -101,6 +111,11 @@ class Problem {
         problemId: json["ProblemID"],
         problemItem: json["ProblemItem"],
         vehicleId: json["VehicleID"],
+        chassisNo: json["ChassisNO"],
+        catalogName: json["CatalogName"],
+        mobileUnitIncomeId: json["MobileUnitIncomeID"],
+        mobileUnitSimIncomeId: json["MobileUnitSIMIncomeID"],
+        modelName: json["ModelName"],
         caseId: json["CaseID"],
         mainProcessId: json["MainProcessID"],
         subProcessId: json["SubProcessID"],
@@ -132,6 +147,11 @@ class Problem {
         "ProblemID": problemId,
         "ProblemItem": problemItem,
         "VehicleID": vehicleId,
+        "ChassisNO": chassisNo,
+        "CatalogName": catalogName,
+        "MobileUnitIncomeID": mobileUnitIncomeId,
+        "MobileUnitSIMIncomeID": mobileUnitSimIncomeId,
+        "ModelName": modelName,
         "CaseID": caseId,
         "MainProcessID": mainProcessId,
         "SubProcessID": subProcessId,
@@ -176,7 +196,7 @@ class TaskCase {
     String? employee;
     String? callerName;
     String? customer;
-    dynamic contact;
+    String? contact;
     String? caseCode;
     String? status;
 
@@ -249,16 +269,19 @@ class Case {
     String? caseCode;
     String? remark;
     String? openDateTime;
-    dynamic beginDate;
-    dynamic beginTime;
-    dynamic endDate;
-    dynamic endTime;
+    String? beginDate;
+    String? beginTime;
+    String? endDate;
+    String? endTime;
     String? beginProgressDateTime;
     String? endProgressDateTime;
     int? customerId;
     String? callerName;
     String? customer;
-    dynamic contact;
+    String? address;
+    String? contactEmail;
+    String? contactPhone;
+    String? contact;
     String? status;
     String? communication;
     String? topic;
@@ -272,7 +295,7 @@ class Case {
     dynamic latitude;
     dynamic longitude;
     dynamic locationName;
-    dynamic fieldServiceNo;
+    String? fieldServiceNo;
     String? closeDescription;
 
     Case({
@@ -289,6 +312,9 @@ class Case {
         this.customerId,
         this.callerName,
         this.customer,
+        this.address,
+        this.contactEmail,
+        this.contactPhone,
         this.contact,
         this.status,
         this.communication,
@@ -321,6 +347,9 @@ class Case {
         customerId: json["CustomerID"],
         callerName: json["CallerName"],
         customer: json["Customer"],
+        address: json["Address"],
+        contactEmail: json["ContactEmail"],
+        contactPhone: json["ContactPhone"],
         contact: json["Contact"],
         status: json["Status"],
         communication: json["Communication"],
@@ -353,6 +382,9 @@ class Case {
         "CustomerID": customerId,
         "CallerName": callerName,
         "Customer": customer,
+        "Address": address,
+        "ContactEmail": contactEmail,
+        "ContactPhone": contactPhone,
         "Contact": contact,
         "Status": status,
         "Communication": communication,

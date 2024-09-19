@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:signature/signature.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../database/data_result_api.dart';
+import '../models/field_service_model.dart';
 
 class FieldServiceReportPage1 extends StatefulWidget {
   @override
@@ -25,8 +29,9 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   // Store API data for customer and vehicle info
   Map<String, dynamic> customerData = {};
   List<Map<String, String>> vehicleData = [];
-  int  caseID = 0;
+  int  CaseID = 0;
   TextEditingController otherController = TextEditingController();
+  TextEditingController otherController2 = TextEditingController();
   @override
   void initState() {
     super.initState();
@@ -45,62 +50,52 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     exportBackgroundColor: Colors.white,
   );
 
-  // Simulating API data fetching
   Future<void> fetchDataFromApi() async {
-    // Mocking customer data API response
-    customerData = {
-      'customer': 'Mingming',
-      'contact': 'Mingming@example.com',
-      'address': '123 Main St, Springfield',
-      'tel': '123-456-7890',
-      'customer email': 'sample@gmail.com',
-      'date': '2024-09-01',
-      'departureTime': '08:00 AM',
-      'arrivalTime': '10:00 AM',
-      'caseNo': '1',
-      'remark':
-          'ส่งเซนเซอร์ลนยางตัวใหม่ จำนวน 6 ตัว  เพื่อเปลี่ยนให้กับ  บริษัท รถเจาะไทย จำกัด MA-001 (CAT740-01) ติดต่อช่างหน้างาน ช่างไพโรจน์ 0936697041 \nที่อยู่ \nคุณสมคิด ปกครอง  086 272 2278\n123/27\nม.3 ต.บางนอน\nอ.เมือง จ.ระนอง 85000'
-    };
+    try {
+      final restDataSource = RestDataSource();
+      final url = restDataSource.GetAllCasebyId(CaseID: 41715);
+      final response = await http.get(Uri.parse(url));
 
-    // Mocking vehicle data API response
-    vehicleData = [
-      {
-        'vehicleId': 'ABC123',
-        'chassis': 'XYZ987',
-        'brand': 'Toyota',
-        'type': 'Sedan',
-        'imei': '123456789012345',
-        'sim': '0987654321',
-        'model': 'Camry',
-        'action': 'Maintenance'
-      },
-      {
-        'vehicleId': 'DEF456',
-        'chassis': 'LMN654',
-        'brand': 'Honda',
-        'type': 'SUV',
-        'imei': '987654321098765',
-        'sim': '1234567890',
-        'model': 'CR-V',
-        'action': 'Repair'
-      },
-      {
-        'vehicleId': 'DEF456',
-        'chassis': 'LMN654',
-        'brand': 'Honda',
-        'type': 'SUV',
-        'imei': '987654321098765',
-        'sim': '1234567890',
-        'model': 'CR-V',
-        'action': 'Repair'
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        final testModel = TestModel.fromJson(jsonData);
+
+        setState(() {
+          CaseID = testModel.caseId ?? 0;
+
+          if (testModel.testModelCase != null && testModel.testModelCase!.isNotEmpty) {
+            final caseData = testModel.testModelCase![0];
+            customerData = {
+              'customer': caseData.customer ?? '',
+              'contact': caseData.contact ?? '',
+              'address': caseData.address?? '', 
+              'tel': caseData.contactPhone?? '', 
+              'customer email': caseData.contactEmail?? '', 
+              'date': caseData.openDateTime ?? '',
+              'departureTime': caseData.endTime ?? '',
+              'arrivalTime': caseData.beginTime ?? '',
+              'caseNo': caseData.caseCode ?? '',
+              'remark': caseData.remark ?? '',
+            };
+          }
+
+          vehicleData = testModel.problem?.map((problem) => {
+            'vehicleId': problem.vehicleId?.toString() ?? '',
+            'chassis': '', // Not available in the API response
+            'brand': '', // Not available in the API response
+            'type': problem.type ?? '',
+            'imei': '', // Not available in the API response
+            'sim': '', // Not available in the API response
+            'model': '', // Not available in the API response
+            'action': problem.mainProcessName ?? '',
+          }).toList() ?? [];
+        });
+      } else {
+        print('Failed to load data: ${response.statusCode}');
       }
-    ];
-
-     caseID = 
-         41715;
-
-    // Update state to display fetched data
-    setState(() {});
+    } catch (e) {
+      print('Error fetching data: $e');
+    }
   }
 
   @override
@@ -108,7 +103,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     return Scaffold(
       appBar: AppBar(
         title:  Text(
-          'Field Service : ${caseID} ',
+          'Field Service : ${CaseID} ',
           
           style: TextStyle(fontSize: 20, color: Colors.white),
         ),
@@ -330,7 +325,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               padding: const EdgeInsets.only(top: 8.0),
               child: TextFormField(
                 maxLines: null,
-                controller: otherController,
+                controller: otherController2,
                 decoration: InputDecoration(
                   labelText: 'Specify Other',
                   border: OutlineInputBorder(),
@@ -386,7 +381,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     );
   }
 
-  Widget _buildTextField(String label, String value) {
+  Widget _buildTextField(String label, String? value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(
@@ -410,7 +405,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                   BorderRadius.circular(8.0), // Optional rounded corners
             ),
             child: TextFormField(
-              initialValue: value,
+              initialValue: value ?? '', // Provide empty string as default if value is null
               readOnly: true, // Make it read-only if necessary
               maxLines: null, // Allow multi-line input if needed
               decoration: InputDecoration(
