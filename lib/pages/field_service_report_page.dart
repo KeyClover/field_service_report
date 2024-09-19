@@ -7,6 +7,7 @@ import 'dart:convert';
 import '../database/data_result_api.dart';
 import '../models/field_service_model.dart';
 import '../database/field_service_report_SQLite.dart';
+ import 'dart:typed_data';
 
 class FieldServiceReportPage1 extends StatefulWidget {
   @override
@@ -26,6 +27,9 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   bool isTemperatureSensor = false;
   bool isOnOffSensor = false;
   bool isOtherChecked2 = false;
+
+  bool  isServiceCompletedYes = false;
+  bool  isServiceCompletedNo = false;
 
   // Store API data for customer and vehicle info
   Map<String, dynamic> customerData = {};
@@ -62,6 +66,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
       isOnOffSensor = data['is_on_off_sensor'] == 1;
       isOtherChecked2 = data['is_other2'] == 1;
       otherController2.text = data['other_text2'] ?? '';
+      isServiceCompletedYes = data['is_service_completed_yes'] == 1;
+      isServiceCompletedNo = data['is_service_completed_no'] == 1;
     });
   }
 
@@ -78,6 +84,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
       'is_on_off_sensor': isOnOffSensor ? 1 : null,
       'is_other2': isOtherChecked2 ? 1 : null,
       'other_text2': isOtherChecked2 ? otherController2.text : null,
+      'is_service_completed_yes': isServiceCompletedYes? 1:null ,
+      'is_service_completed_no': isServiceCompletedNo? 1:null,
     };
     await FieldServiceDatabase.instance.saveServiceData(CaseID, data);
   }
@@ -562,13 +570,50 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     );
   }
 
+
   Widget _buildSignatureSectionForCustomer() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Service Completed',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        Row(
+          children: [
+            const Text(
+              'Service Completed',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(width: 16),
+            Row(
+              children: [
+                Checkbox(
+                  value: isServiceCompletedYes,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      isServiceCompletedYes = value ?? false;
+                      if (isServiceCompletedYes) {
+                        isServiceCompletedNo = false;
+                      }
+                    });
+                    saveServiceData();
+                  },
+                ),
+                Text('YES'),
+                SizedBox(width: 16),
+                Checkbox(
+                  value: isServiceCompletedNo,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      isServiceCompletedNo = value ?? false;
+                      if (isServiceCompletedNo) {
+                        isServiceCompletedYes = false;
+                      }
+                    });
+                    saveServiceData();
+                  },
+                ),
+                Text('NO'),
+              ],
+            ),
+          ],
         ),
         SizedBox(height: 8),
         Container(

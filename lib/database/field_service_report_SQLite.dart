@@ -35,7 +35,9 @@ class FieldServiceDatabase {
         is_temperature_sensor INTEGER,
         is_on_off_sensor INTEGER,
         is_other2 INTEGER,
-        other_text2 TEXT
+        other_text2 TEXT,
+        is_service_completed_yes INTEGER,
+        is_service_completed_no INTEGER
       )
     ''');
   }
