@@ -53,7 +53,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   Future<void> fetchDataFromApi() async {
     try {
       final restDataSource = RestDataSource();
-      final url = restDataSource.GetAllCasebyId(CaseID: 41715);
+      final url = restDataSource.GetAllCasebyId(CaseID: 40003);
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
@@ -81,12 +81,12 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
 
           vehicleData = testModel.problem?.map((problem) => {
             'vehicleId': problem.vehicleId?.toString() ?? '',
-            'chassis': problem.chassisNo??'', // Not available in the API response
-            'brand': problem.catalogName??'', // Not available in the API response
+            'chassis': problem.chassisNo??'', 
+            'brand': problem.catalogName??'', 
             'type': problem.type ?? '',
-            'imei': problem.mobileUnitIncomeId?.toString()?? '', // Not available in the API response
-            'sim': problem.mobileUnitSimIncomeId?.toString()??'', // Not available in the API response
-            'model': problem.modelName??'', // Not available in the API response
+            'imei': problem.mobileUnitIncomeId?.toString()?? '',
+            'sim': problem.mobileUnitSimIncomeId?.toString()??'', 
+            'model': problem.modelName??'', 
             'action': problem.mainProcessName ?? '',
           }).toList() ?? [];
         });
@@ -340,29 +340,51 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   // Build vehicle info section with dynamic fields based on API data
   Widget _buildVehicleInfoSection() {
     return Column(
-      children: vehicleData.map((vehicle) {
-        return Container(
-          margin: EdgeInsets.symmetric(vertical: 16.0),
-          padding: EdgeInsets.all(16.0),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8.0),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (vehicleData.length > 1)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: Text(
+              'Multiple Vehicles',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildVehicleField('Vehicle ID', vehicle['vehicleId']),
-              _buildVehicleField('Chassis', vehicle['chassis']),
-              _buildVehicleField('Brand', vehicle['brand']),
-              _buildVehicleField('Type', vehicle['type']),
-              _buildVehicleField('IMEI', vehicle['imei']),
-              _buildVehicleField('SIM', vehicle['sim']),
-              _buildVehicleField('Model', vehicle['model']),
-              _buildVehicleField('Action', vehicle['action']),
-            ],
-          ),
-        );
-      }).toList(),
+        ...vehicleData.asMap().entries.map((entry) {
+          int index = entry.key;
+          Map<String, String> vehicle = entry.value;
+          return Container(
+            margin: EdgeInsets.symmetric(vertical: 16.0),
+            padding: EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8.0),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (vehicleData.length > 1)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Text(
+                      'Vehicle ${index + 1}',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                _buildVehicleField('Vehicle ID', vehicle['vehicleId']),
+                _buildVehicleField('Chassis', vehicle['chassis']),
+                _buildVehicleField('Brand', vehicle['brand']),
+                _buildVehicleField('Type', vehicle['type']),
+                _buildVehicleField('IMEI', vehicle['imei']),
+                _buildVehicleField('SIM', vehicle['sim']),
+                _buildVehicleField('Model', vehicle['model']),
+                _buildVehicleField('Action', vehicle['action']),
+              ],
+            ),
+          );
+        }).toList(),
+      ],
     );
   }
 
