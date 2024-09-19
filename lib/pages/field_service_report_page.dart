@@ -81,12 +81,12 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
 
           vehicleData = testModel.problem?.map((problem) => {
             'vehicleId': problem.vehicleId?.toString() ?? '',
-            'chassis': '', // Not available in the API response
-            'brand': '', // Not available in the API response
+            'chassis': problem.chassisNo??'', // Not available in the API response
+            'brand': problem.catalogName??'', // Not available in the API response
             'type': problem.type ?? '',
-            'imei': '', // Not available in the API response
-            'sim': '', // Not available in the API response
-            'model': '', // Not available in the API response
+            'imei': problem.mobileUnitIncomeId?.toString()?? '', // Not available in the API response
+            'sim': problem.mobileUnitSimIncomeId?.toString()??'', // Not available in the API response
+            'model': problem.modelName??'', // Not available in the API response
             'action': problem.mainProcessName ?? '',
           }).toList() ?? [];
         });
