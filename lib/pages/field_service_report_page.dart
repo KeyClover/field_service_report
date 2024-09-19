@@ -67,17 +67,17 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
 
   Future<void> saveServiceData() async {
     final data = {
-      'is_installation': isInstallationChecked ? 1 : 0,
-      'is_reparation': isReparationChecked ? 1 : 0,
-      'is_remove': isRemoveChecked ? 1 : 0,
-      'is_other': isOtherChecked ? 1 : 0,
-      'other_text': otherController.text,
-      'is_magnetic_card_reader': isMagneticCardReader ? 1 : 0,
-      'is_fuel_sensor': isFuelSensor ? 1 : 0,
-      'is_temperature_sensor': isTemperatureSensor ? 1 : 0,
-      'is_on_off_sensor': isOnOffSensor ? 1 : 0,
-      'is_other2': isOtherChecked2 ? 1 : 0,
-      'other_text2': otherController2.text,
+      'is_installation': isInstallationChecked ? 1 : null,
+      'is_reparation': isReparationChecked ? 1 : null,
+      'is_remove': isRemoveChecked ? 1 : null,
+      'is_other': isOtherChecked ? 1 : null,
+      'other_text': isOtherChecked ? otherController.text : null,
+      'is_magnetic_card_reader': isMagneticCardReader ? 1 : null,
+      'is_fuel_sensor': isFuelSensor ? 1 : null,
+      'is_temperature_sensor': isTemperatureSensor ? 1 : null,
+      'is_on_off_sensor': isOnOffSensor ? 1 : null,
+      'is_other2': isOtherChecked2 ? 1 : null,
+      'other_text2': isOtherChecked2 ? otherController2.text : null,
     };
     await FieldServiceDatabase.instance.saveServiceData(CaseID, data);
   }

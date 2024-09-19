@@ -42,10 +42,18 @@ class FieldServiceDatabase {
 
   Future<void> saveServiceData(int caseId, Map<String, dynamic> data) async {
     final db = await database;
-    await db.insert('service_data', 
-      {...data, 'case_id': caseId},
-      conflictAlgorithm: ConflictAlgorithm.replace
-    );
+    final existingData = await getServiceData(caseId);
+    
+    if (existingData.isEmpty) {
+      await db.insert('service_data', {...data, 'case_id': caseId});
+    } else {
+      await db.update(
+        'service_data',
+        {...data, 'case_id': caseId},
+        where: 'case_id = ?',
+        whereArgs: [caseId],
+      );
+    }
   }
 
   Future<Map<String, dynamic>> getServiceData(int caseId) async {
