@@ -7,7 +7,7 @@ import 'dart:convert';
 import '../database/data_result_api.dart';
 import '../models/field_service_model.dart';
 import '../database/field_service_report_SQLite.dart';
- import 'dart:typed_data';
+
 
 class FieldServiceReportPage1 extends StatefulWidget {
   @override
@@ -105,7 +105,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   Future<void> fetchDataFromApi() async {
     try {
       final restDataSource = RestDataSource();
-      final url = restDataSource.GetAllCasebyId(CaseID: 40001); // noted: I use 40003, 40002, 40001 as an example
+      final url = restDataSource.GetAllCasebyId(CaseID: 40003); // noted: I use 40003, 40002, 40001 as an example
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
@@ -132,7 +132,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
           }
 
           vehicleData = testModel.problem?.map((problem) => {
-            'vehicleId': problem.vehicleId?.toString() ?? '',
+            'license no.': problem.licenseNo ?? '',
             'chassis': problem.chassisNo ?? '',
             'brand': problem.catalogName ?? '',
             'type': problem.type ?? '',
@@ -196,7 +196,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                     mainAxisSpacing: 10.0,
                   ),
                   children: [
-                    _buildGridField('Date', customerData['date']),
+                    _buildGridField('Date', customerData ['date']),
                     _buildGridField('Case No.', customerData['caseNo']),
                     _buildGridField(
                         'Arrival Time', customerData['arrivalTime']),
@@ -393,7 +393,10 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
 
   // Build vehicle info section with dynamic fields based on API data
   Widget _buildVehicleInfoSection() {
-    final validVehicles = vehicleData.where((vehicle) => vehicle['vehicleId'] != '0').toList();
+    final validVehicles = vehicleData.where((vehicle) {
+      final licenseNo = vehicle['license no.'];
+      return licenseNo != null && licenseNo != 'null' && licenseNo.trim().isNotEmpty;
+    }).toList();
 
     if (validVehicles.isEmpty) {
       return SizedBox.shrink(); // Return an empty widget if there are no valid vehicles
@@ -432,14 +435,9 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
-                _buildVehicleField('Vehicle ID', vehicle['vehicleId']),
-                _buildVehicleField('Chassis', vehicle['chassis']),
-                _buildVehicleField('Brand', vehicle['brand']),
-                _buildVehicleField('Type', vehicle['type']),
-                _buildVehicleField('IMEI', vehicle['imei']),
-                _buildVehicleField('SIM', vehicle['sim']),
-                _buildVehicleField('Model', vehicle['model']),
-                _buildVehicleField('Action', vehicle['action']),
+                ...vehicle.entries
+                    .where((e) => e.value != null && e.value != 'null' && e.value.trim().isNotEmpty)
+                    .map((e) => _buildVehicleField(e.key, e.value)),
               ],
             ),
           );
