@@ -133,6 +133,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
 
           vehicleData = testModel.problem?.map((problem) => {
             'license no.': problem.licenseNo ?? '',
+            'create by':problem.createBy?.toString() ?? '',
             'chassis': problem.chassisNo ?? '',
             'brand': problem.catalogName ?? '',
             'type': problem.type ?? '',
