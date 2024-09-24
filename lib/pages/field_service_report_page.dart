@@ -8,7 +8,6 @@ import '../database/data_result_api.dart';
 import '../models/field_service_model.dart';
 import '../database/field_service_report_SQLite.dart';
 
-
 class FieldServiceReportPage1 extends StatefulWidget {
   @override
   _FieldServiceReportPage1State createState() =>
@@ -28,8 +27,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   bool isOnOffSensor = false;
   bool isOtherChecked2 = false;
 
-  bool  isServiceCompletedYes = false;
-  bool  isServiceCompletedNo = false;
+  bool isServiceCompletedYes = false;
+  bool isServiceCompletedNo = false;
 
   // Store API data for customer and vehicle info
   Map<String, dynamic> customerData = {};
@@ -84,8 +83,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
       'is_on_off_sensor': isOnOffSensor ? 1 : null,
       'is_other2': isOtherChecked2 ? 1 : null,
       'other_text2': isOtherChecked2 ? otherController2.text : null,
-      'is_service_completed_yes': isServiceCompletedYes? 1:null ,
-      'is_service_completed_no': isServiceCompletedNo? 1:null,
+      'is_service_completed_yes': isServiceCompletedYes ? 1 : null,
+      'is_service_completed_no': isServiceCompletedNo ? 1 : null,
     };
     await FieldServiceDatabase.instance.saveServiceData(CaseID, data);
   }
@@ -105,7 +104,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   Future<void> fetchDataFromApi() async {
     try {
       final restDataSource = RestDataSource();
-      final url = restDataSource.GetAllCasebyId(CaseID: 40003); // noted: I use 40003, 40002, 40001 as an example
+      final url = restDataSource.GetAllCasebyId(
+          CaseID: 40003); // noted: I use 40003, 40002, 40001 as an example
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
@@ -115,7 +115,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
         setState(() {
           CaseID = testModel.caseId ?? 0;
 
-          if (testModel.testModelCase != null && testModel.testModelCase!.isNotEmpty) {
+          if (testModel.testModelCase != null &&
+              testModel.testModelCase!.isNotEmpty) {
             final caseData = testModel.testModelCase![0];
             customerData = {
               'customer': caseData.customer ?? '',
@@ -131,17 +132,20 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
             };
           }
 
-          vehicleData = testModel.problem?.map((problem) => {
-            'license no.': problem.licenseNo ?? '',
-            'create by':problem.createBy?.toString() ?? '',
-            'chassis': problem.chassisNo ?? '',
-            'brand': problem.catalogName ?? '',
-            'type': problem.type ?? '',
-            'imei': problem.mobileUnitIncomeId?.toString() ?? '',
-            'sim': problem.mobileUnitSimIncomeId?.toString() ?? '',
-            'model': problem.modelName ?? '',
-            'action': problem.mainProcessName ?? '',
-          }).toList() ?? [];
+          vehicleData = testModel.problem
+                  ?.map((problem) => {
+                        'license no.': problem.licenseNo ?? '',
+                        'create by': problem.createBy?.toString() ?? '',
+                        'chassis': problem.chassisNo ?? '',
+                        'brand': problem.catalogName ?? '',
+                        'type': problem.type ?? '',
+                        'imei': problem.mobileUnitIncomeId?.toString() ?? '',
+                        'sim': problem.mobileUnitSimIncomeId?.toString() ?? '',
+                        'model': problem.modelName ?? '',
+                        'action': problem.mainProcessName ?? '',
+                      })
+                  .toList() ??
+              [];
         });
 
         // Load saved service data after fetching API data
@@ -158,9 +162,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:  Text(
+        title: Text(
           'Field Service : ${CaseID} ',
-          
           style: TextStyle(fontSize: 20, color: Colors.white),
         ),
         backgroundColor: HexColor("#2e3150"),
@@ -177,69 +180,78 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Customer Information Section - Auto-filled from API
-                _buildTextField('Customer', customerData['customer']),
-                _buildTextField('Contact', customerData['contact']),
-                _buildTextField('Address', customerData['address']),
-                _buildTextField('Tel', customerData['tel']),
-                _buildTextField('Email', customerData['customer email']),
-
-                SizedBox(height: 16),
-
-                GridView(
-                  shrinkWrap: true,
-                  physics:
-                      const NeverScrollableScrollPhysics(), // Prevent scroll within the grid
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 2, // Adjusts the height of grid items
-                    crossAxisSpacing: 10.0,
-                    mainAxisSpacing: 10.0,
-                  ),
-                  children: [
-                    _buildGridField('Date', customerData ['date']),
-                    _buildGridField('Case No.', customerData['caseNo']),
-                    _buildGridField(
-                        'Arrival Time', customerData['arrivalTime']),
-                    _buildGridField(
-                        'Departure Time', customerData['departureTime']),
-                  ],
-                ),
-
-                SizedBox(
-                  height: 16,
-                ),
-                // Checkbox Section for user input
-                _buildCheckboxSection(),
-
-                SizedBox(height: 16),
-
-                _buildCheckboxSection2(),
-
-                SizedBox(height: 16),
-
-                // Vehicle Information Section - Auto-filled from API
-                _buildVehicleInfoSection(),
-
-                SizedBox(height: 16),
-
-                _buildTextField('Remark', customerData['remark']),
-
-                SizedBox(height: 16),
-
-                _buildSignatureSection(),
-
-                SizedBox(
-                  height: 16,
-                ),
-
-                _buildSignatureSectionForCustomer(),
+                _buildFieldServiceReportDisplay(),
               ],
             ),
           ),
         ),
       ),
       backgroundColor: Colors.white,
+    );
+  }
+
+  Widget _buildFieldServiceReportDisplay() {
+    return Container(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Customer Information Section - Auto-filled from API
+          _buildTextField('Customer', customerData['customer']),
+          _buildTextField('Contact', customerData['contact']),
+          _buildTextField('Address', customerData['address']),
+          _buildTextField('Tel', customerData['tel']),
+          _buildTextField('Email', customerData['customer email']),
+
+          SizedBox(height: 16),
+
+          GridView(
+            shrinkWrap: true,
+            physics:
+                const NeverScrollableScrollPhysics(), // Prevent scroll within the grid
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 2, // Adjusts the height of grid items
+              crossAxisSpacing: 10.0,
+              mainAxisSpacing: 10.0,
+            ),
+            children: [
+              _buildGridField('Date', customerData['date']),
+              _buildGridField('Case No.', customerData['caseNo']),
+              _buildGridField('Arrival Time', customerData['arrivalTime']),
+              _buildGridField('Departure Time', customerData['departureTime']),
+            ],
+          ),
+
+          SizedBox(
+            height: 16,
+          ),
+          // Checkbox Section for user input
+          _buildCheckboxSection(),
+
+          SizedBox(height: 16),
+
+          _buildCheckboxSection2(),
+
+          SizedBox(height: 16),
+
+          // Vehicle Information Section - Auto-filled from API
+          _buildVehicleInfoSection(),
+
+          SizedBox(height: 16),
+
+          _buildTextField('Remark', customerData['remark']),
+
+          SizedBox(height: 16),
+
+          _buildSignatureSection(),
+
+          SizedBox(
+            height: 16,
+          ),
+
+          _buildSignatureSectionForCustomer(),
+        ],
+      ),
     );
   }
 
@@ -396,11 +408,14 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   Widget _buildVehicleInfoSection() {
     final validVehicles = vehicleData.where((vehicle) {
       final licenseNo = vehicle['license no.'];
-      return licenseNo != null && licenseNo != 'null' && licenseNo.trim().isNotEmpty;
+      return licenseNo != null &&
+          licenseNo != 'null' &&
+          licenseNo.trim().isNotEmpty;
     }).toList();
 
     if (validVehicles.isEmpty) {
-      return SizedBox.shrink(); // Return an empty widget if there are no valid vehicles
+      return SizedBox
+          .shrink(); // Return an empty widget if there are no valid vehicles
     }
 
     return Column(
@@ -433,11 +448,15 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: Text(
                       'Vehicle ${index + 1}',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ...vehicle.entries
-                    .where((e) => e.value != null && e.value != 'null' && e.value.trim().isNotEmpty)
+                    .where((e) =>
+                        e.value != null &&
+                        e.value != 'null' &&
+                        e.value.trim().isNotEmpty)
                     .map((e) => _buildVehicleField(e.key, e.value)),
               ],
             ),
@@ -486,7 +505,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                   BorderRadius.circular(8.0), // Optional rounded corners
             ),
             child: TextFormField(
-              initialValue: value ?? '', // Provide empty string as default if value is null
+              initialValue: value ??
+                  '', // Provide empty string as default if value is null
               readOnly: true, // Make it read-only if necessary
               maxLines: null, // Allow multi-line input if needed
               decoration: InputDecoration(
@@ -506,16 +526,15 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
 
   Widget _buildGridField(String label, String value) {
     return Column(
-       crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: TextStyle(
-            fontSize: 16,
-            fontWeight:FontWeight.w500,
-            color: Colors.grey[700] ),
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey[700]),
         ),
-        
         Container(
           decoration: BoxDecoration(
             color: HexColor("FFFFFF"),
@@ -568,7 +587,6 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
       ],
     );
   }
-
 
   Widget _buildSignatureSectionForCustomer() {
     return Column(
