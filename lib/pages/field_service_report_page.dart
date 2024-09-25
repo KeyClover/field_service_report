@@ -28,7 +28,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     try {
       final restDataSource = RestDataSource();
       final url = restDataSource.GetAllCasebyId(
-          CaseID: 40003); // noted: I use 40003, 40002, 40001 as an example
+          CaseID: 40001); // noted: I use 40003, 40002, 40001 as an example
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
@@ -156,7 +156,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
       children: [
         Text(
           'Case: ${CaseID}',
-          style:const TextStyle(fontSize: 20, color: Colors.black),
+          style: const TextStyle(fontSize: 20, color: Colors.black),
         ),
         // Customer Information Section - Auto-filled from API
         _buildTextField('Customer', report.customerData['customer']),
@@ -515,6 +515,11 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               },
               child: Text('Clear Signature'),
             ),
+            SizedBox(width: 18),
+            ElevatedButton(onPressed: (){
+               report.signatureController.clear();
+                    
+            }, child: Text('Save Signature',))
           ],
         ),
       ],
@@ -586,6 +591,13 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                     .clear(); // Clear the signature
               },
               child: Text('Clear Signature'),
+            ),
+            SizedBox(width: 18),
+            ElevatedButton(
+              onPressed: () {
+                report.customerSignatureController.clear();
+              },
+              child: Text('Save Signature'),
             ),
           ],
         ),
