@@ -58,7 +58,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
             Set<String> uniqueLicenseNumbers = Set();
             testModel.problem?.forEach((problem) {
               String licenseNo = problem.licenseNo ?? '';
-              if (licenseNo.isNotEmpty && !uniqueLicenseNumbers.contains(licenseNo)) {
+              if (licenseNo.isNotEmpty &&
+                  !uniqueLicenseNumbers.contains(licenseNo)) {
                 uniqueLicenseNumbers.add(licenseNo);
                 reports.add(FieldServiceReport(
                   customerData: customerData,
@@ -105,22 +106,43 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
-            children: reports.map((report) {
-              return Container(
-                margin: EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: HexColor("E0E0E0"),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                padding: EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildFieldServiceReport(report),
-                  ],
-                ),
-              );
-            }).toList(),
+            children: [
+              ...reports.map((report) {
+                return Container(
+                  margin: EdgeInsets.only(bottom: 10),
+                  decoration: BoxDecoration(
+                    color: HexColor("E0E0E0"),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildFieldServiceReport(report),
+                    ],
+                  ),
+                );
+              }).toList(),
+              if (reports.isNotEmpty) ...[
+                Container(
+                  margin: EdgeInsets.only(bottom: 10),
+                  decoration: BoxDecoration(
+                    color: HexColor("E0E0E0"),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 20),
+                      _buildSignatureSection(reports.first),
+                      SizedBox(height: 20),
+                      _buildSignatureSectionForCustomer(reports.first),
+                    ],
+                  ),
+                )
+              ],
+            ],
           ),
         ),
       ),
@@ -132,6 +154,10 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text(
+          'Case: ${CaseID}',
+          style:const TextStyle(fontSize: 20, color: Colors.black),
+        ),
         // Customer Information Section - Auto-filled from API
         _buildTextField('Customer', report.customerData['customer']),
         _buildTextField('Contact', report.customerData['contact']),
@@ -154,7 +180,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
             _buildGridField('Date', report.customerData['date']),
             _buildGridField('Case No.', report.customerData['caseNo']),
             _buildGridField('Arrival Time', report.customerData['arrivalTime']),
-            _buildGridField('Departure Time', report.customerData['departureTime']),
+            _buildGridField(
+                'Departure Time', report.customerData['departureTime']),
           ],
         ),
 
@@ -169,12 +196,6 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
 
         SizedBox(height: 16),
         _buildTextField('Remark', report.customerData['remark']),
-
-        SizedBox(height: 16),
-        _buildSignatureSection(report),
-
-        SizedBox(height: 16),
-        _buildSignatureSectionForCustomer(report),
       ],
     );
   }
@@ -310,7 +331,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               report.saveServiceData(CaseID);
             },
           ),
-          if (report.isOtherChecked2) // Conditionally display text field for "Other"
+          if (report
+              .isOtherChecked2) // Conditionally display text field for "Other"
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: TextFormField(
@@ -333,7 +355,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     final validVehicles = [report.vehicleData];
 
     if (validVehicles.isEmpty) {
-      return SizedBox.shrink(); // Return an empty widget if there are no valid vehicles
+      return SizedBox
+          .shrink(); // Return an empty widget if there are no valid vehicles
     }
 
     return Column(
@@ -358,7 +381,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: Text(
                       'Vehicle ${index + 1}',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ...vehicle.entries
@@ -558,7 +582,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
           children: [
             ElevatedButton(
               onPressed: () {
-                report.customerSignatureController.clear(); // Clear the signature
+                report.customerSignatureController
+                    .clear(); // Clear the signature
               },
               child: Text('Clear Signature'),
             ),
@@ -568,6 +593,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     );
   }
 }
+
 class FieldServiceReport {
   Map<String, dynamic> customerData;
   Map<String, String> vehicleData;
