@@ -15,91 +15,14 @@ class FieldServiceReportPage1 extends StatefulWidget {
 }
 
 class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
-  // Checkbox states
-  bool isInstallationChecked = false;
-  bool isReparationChecked = false;
-  bool isRemoveChecked = false;
-  bool isOtherChecked = false;
-
-  bool isMagneticCardReader = false;
-  bool isFuelSensor = false;
-  bool isTemperatureSensor = false;
-  bool isOnOffSensor = false;
-  bool isOtherChecked2 = false;
-
-  bool isServiceCompletedYes = false;
-  bool isServiceCompletedNo = false;
-
-  // Store API data for customer and vehicle info
-  Map<String, dynamic> customerData = {};
-  List<Map<String, String>> vehicleData = [];
+  List<FieldServiceReport> reports = [];
   int CaseID = 0;
-  TextEditingController otherController = TextEditingController();
-  TextEditingController otherController2 = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     fetchDataFromApi();
   }
-
-  @override
-  void dispose() {
-    otherController.dispose();
-    otherController2.dispose();
-    super.dispose();
-  }
-
-  Future<void> loadServiceData() async {
-    final data = await FieldServiceDatabase.instance.getServiceData(CaseID);
-    setState(() {
-      isInstallationChecked = data['is_installation'] == 1;
-      isReparationChecked = data['is_reparation'] == 1;
-      isRemoveChecked = data['is_remove'] == 1;
-      isOtherChecked = data['is_other'] == 1;
-      otherController.text = data['other_text'] ?? '';
-
-      isMagneticCardReader = data['is_magnetic_card_reader'] == 1;
-      isFuelSensor = data['is_fuel_sensor'] == 1;
-      isTemperatureSensor = data['is_temperature_sensor'] == 1;
-      isOnOffSensor = data['is_on_off_sensor'] == 1;
-      isOtherChecked2 = data['is_other2'] == 1;
-      otherController2.text = data['other_text2'] ?? '';
-      isServiceCompletedYes = data['is_service_completed_yes'] == 1;
-      isServiceCompletedNo = data['is_service_completed_no'] == 1;
-    });
-  }
-
-  Future<void> saveServiceData() async {
-    final data = {
-      'is_installation': isInstallationChecked ? 1 : null,
-      'is_reparation': isReparationChecked ? 1 : null,
-      'is_remove': isRemoveChecked ? 1 : null,
-      'is_other': isOtherChecked ? 1 : null,
-      'other_text': isOtherChecked ? otherController.text : null,
-      'is_magnetic_card_reader': isMagneticCardReader ? 1 : null,
-      'is_fuel_sensor': isFuelSensor ? 1 : null,
-      'is_temperature_sensor': isTemperatureSensor ? 1 : null,
-      'is_on_off_sensor': isOnOffSensor ? 1 : null,
-      'is_other2': isOtherChecked2 ? 1 : null,
-      'other_text2': isOtherChecked2 ? otherController2.text : null,
-      'is_service_completed_yes': isServiceCompletedYes ? 1 : null,
-      'is_service_completed_no': isServiceCompletedNo ? 1 : null,
-    };
-    await FieldServiceDatabase.instance.saveServiceData(CaseID, data);
-  }
-
-  final SignatureController _signatureController = SignatureController(
-    penStrokeWidth: 2,
-    penColor: Colors.black,
-    exportBackgroundColor: Colors.white,
-  );
-
-  final SignatureController _customerSignatureController = SignatureController(
-    penStrokeWidth: 2,
-    penColor: Colors.black,
-    exportBackgroundColor: Colors.white,
-  );
 
   Future<void> fetchDataFromApi() async {
     try {
@@ -118,7 +41,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
           if (testModel.testModelCase != null &&
               testModel.testModelCase!.isNotEmpty) {
             final caseData = testModel.testModelCase![0];
-            customerData = {
+            Map<String, dynamic> customerData = {
               'customer': caseData.customer ?? '',
               'contact': caseData.contact ?? '',
               'address': caseData.address ?? '',
@@ -130,26 +53,36 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               'caseNo': caseData.caseCode ?? '',
               'remark': caseData.remark ?? '',
             };
-          }
 
-          vehicleData = testModel.problem
-                  ?.map((problem) => {
-                        'license no.': problem.licenseNo ?? '',
-                        'create by': problem.createBy?.toString() ?? '',
-                        'chassis': problem.chassisNo ?? '',
-                        'brand': problem.catalogName ?? '',
-                        'type': problem.type ?? '',
-                        'imei': problem.mobileUnitIncomeId?.toString() ?? '',
-                        'sim': problem.mobileUnitSimIncomeId?.toString() ?? '',
-                        'model': problem.modelName ?? '',
-                        'action': problem.mainProcessName ?? '',
-                      })
-                  .toList() ??
-              [];
+            // Create a FieldServiceReport for each unique license number
+            Set<String> uniqueLicenseNumbers = Set();
+            testModel.problem?.forEach((problem) {
+              String licenseNo = problem.licenseNo ?? '';
+              if (licenseNo.isNotEmpty && !uniqueLicenseNumbers.contains(licenseNo)) {
+                uniqueLicenseNumbers.add(licenseNo);
+                reports.add(FieldServiceReport(
+                  customerData: customerData,
+                  vehicleData: {
+                    'license no.': licenseNo,
+                    'create by': problem.createBy?.toString() ?? '',
+                    'chassis': problem.chassisNo ?? '',
+                    'brand': problem.catalogName ?? '',
+                    'type': problem.type ?? '',
+                    'imei': problem.mobileUnitIncomeId?.toString() ?? '',
+                    'sim': problem.mobileUnitSimIncomeId?.toString() ?? '',
+                    'model': problem.modelName ?? '',
+                    'action': problem.mainProcessName ?? '',
+                  },
+                ));
+              }
+            });
+          }
         });
 
         // Load saved service data after fetching API data
-        await loadServiceData();
+        for (var report in reports) {
+          await report.loadServiceData(CaseID);
+        }
       } else {
         print('Failed to load data: ${response.statusCode}');
       }
@@ -171,18 +104,23 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: HexColor("E0E0E0"), // Inside container color
-              borderRadius: BorderRadius.circular(20),
-            ),
-            padding: EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildFieldServiceReportDisplay(),
-              ],
-            ),
+          child: Column(
+            children: reports.map((report) {
+              return Container(
+                margin: EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: HexColor("E0E0E0"),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildFieldServiceReport(report),
+                  ],
+                ),
+              );
+            }).toList(),
           ),
         ),
       ),
@@ -190,73 +128,59 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     );
   }
 
-  Widget _buildFieldServiceReportDisplay() {
-    return Container(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Customer Information Section - Auto-filled from API
-          _buildTextField('Customer', customerData['customer']),
-          _buildTextField('Contact', customerData['contact']),
-          _buildTextField('Address', customerData['address']),
-          _buildTextField('Tel', customerData['tel']),
-          _buildTextField('Email', customerData['customer email']),
+  Widget _buildFieldServiceReport(FieldServiceReport report) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Customer Information Section - Auto-filled from API
+        _buildTextField('Customer', report.customerData['customer']),
+        _buildTextField('Contact', report.customerData['contact']),
+        _buildTextField('Address', report.customerData['address']),
+        _buildTextField('Tel', report.customerData['tel']),
+        _buildTextField('Email', report.customerData['customer email']),
 
-          SizedBox(height: 16),
+        SizedBox(height: 16),
 
-          GridView(
-            shrinkWrap: true,
-            physics:
-                const NeverScrollableScrollPhysics(), // Prevent scroll within the grid
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 2, // Adjusts the height of grid items
-              crossAxisSpacing: 10.0,
-              mainAxisSpacing: 10.0,
-            ),
-            children: [
-              _buildGridField('Date', customerData['date']),
-              _buildGridField('Case No.', customerData['caseNo']),
-              _buildGridField('Arrival Time', customerData['arrivalTime']),
-              _buildGridField('Departure Time', customerData['departureTime']),
-            ],
+        GridView(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 2,
+            crossAxisSpacing: 10.0,
+            mainAxisSpacing: 10.0,
           ),
+          children: [
+            _buildGridField('Date', report.customerData['date']),
+            _buildGridField('Case No.', report.customerData['caseNo']),
+            _buildGridField('Arrival Time', report.customerData['arrivalTime']),
+            _buildGridField('Departure Time', report.customerData['departureTime']),
+          ],
+        ),
 
-          SizedBox(
-            height: 16,
-          ),
-          // Checkbox Section for user input
-          _buildCheckboxSection(),
+        SizedBox(height: 16),
+        _buildCheckboxSection(report),
 
-          SizedBox(height: 16),
+        SizedBox(height: 16),
+        _buildCheckboxSection2(report),
 
-          _buildCheckboxSection2(),
+        SizedBox(height: 16),
+        _buildVehicleInfoSection(report),
 
-          SizedBox(height: 16),
+        SizedBox(height: 16),
+        _buildTextField('Remark', report.customerData['remark']),
 
-          // Vehicle Information Section - Auto-filled from API
-          _buildVehicleInfoSection(),
+        SizedBox(height: 16),
+        _buildSignatureSection(report),
 
-          SizedBox(height: 16),
-
-          _buildTextField('Remark', customerData['remark']),
-
-          SizedBox(height: 16),
-
-          _buildSignatureSection(),
-
-          SizedBox(
-            height: 16,
-          ),
-
-          _buildSignatureSectionForCustomer(),
-        ],
-      ),
+        SizedBox(height: 16),
+        _buildSignatureSectionForCustomer(report),
+      ],
     );
   }
 
   // Build checkboxes for service type selection
-  Widget _buildCheckboxSection() {
+  Widget _buildCheckboxSection(FieldServiceReport report) {
     return Container(
       padding: EdgeInsets.all(16.0),
       decoration: BoxDecoration(
@@ -269,55 +193,55 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
           Text('Service Type', style: TextStyle(fontWeight: FontWeight.bold)),
           CheckboxListTile(
             title: Text('Installation'),
-            value: isInstallationChecked,
+            value: report.isInstallationChecked,
             onChanged: (bool? value) {
               setState(() {
-                isInstallationChecked = value ?? false;
+                report.isInstallationChecked = value ?? false;
               });
-              saveServiceData();
+              report.saveServiceData(CaseID);
             },
           ),
           CheckboxListTile(
             title: Text('Reparation'),
-            value: isReparationChecked,
+            value: report.isReparationChecked,
             onChanged: (bool? value) {
               setState(() {
-                isReparationChecked = value ?? false;
+                report.isReparationChecked = value ?? false;
               });
-              saveServiceData();
+              report.saveServiceData(CaseID);
             },
           ),
           CheckboxListTile(
             title: Text('Remove & Reinstall'),
-            value: isRemoveChecked,
+            value: report.isRemoveChecked,
             onChanged: (bool? value) {
               setState(() {
-                isRemoveChecked = value ?? false;
+                report.isRemoveChecked = value ?? false;
               });
-              saveServiceData();
+              report.saveServiceData(CaseID);
             },
           ),
           CheckboxListTile(
             title: Text('Other'),
-            value: isOtherChecked,
+            value: report.isOtherChecked,
             onChanged: (bool? value) {
               setState(() {
-                isOtherChecked = value ?? false;
+                report.isOtherChecked = value ?? false;
               });
-              saveServiceData();
+              report.saveServiceData(CaseID);
             },
           ),
-          if (isOtherChecked) // Conditionally display text field for "Other"
+          if (report.isOtherChecked)
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: TextFormField(
-                controller: otherController,
+                controller: report.otherController,
                 maxLines: null,
                 decoration: InputDecoration(
                   labelText: 'Specify Other',
                   border: OutlineInputBorder(),
                 ),
-                onChanged: (_) => saveServiceData(),
+                onChanged: (_) => report.saveServiceData(CaseID),
               ),
             ),
         ],
@@ -325,7 +249,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     );
   }
 
-  Widget _buildCheckboxSection2() {
+  Widget _buildCheckboxSection2(FieldServiceReport report) {
     return Container(
       padding: EdgeInsets.all(16.0),
       decoration: BoxDecoration(
@@ -338,65 +262,65 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
           Text('Tools', style: TextStyle(fontWeight: FontWeight.bold)),
           CheckboxListTile(
             title: Text('Magnetic Card Reader'),
-            value: isMagneticCardReader,
+            value: report.isMagneticCardReader,
             onChanged: (bool? value) {
               setState(() {
-                isMagneticCardReader = value ?? false;
+                report.isMagneticCardReader = value ?? false;
               });
-              saveServiceData();
+              report.saveServiceData(CaseID);
             },
           ),
           CheckboxListTile(
             title: Text('Fuel Sensor'),
-            value: isFuelSensor,
+            value: report.isFuelSensor,
             onChanged: (bool? value) {
               setState(() {
-                isFuelSensor = value ?? false;
+                report.isFuelSensor = value ?? false;
               });
-              saveServiceData();
+              report.saveServiceData(CaseID);
             },
           ),
           CheckboxListTile(
             title: Text('Temperature Sensor'),
-            value: isTemperatureSensor,
+            value: report.isTemperatureSensor,
             onChanged: (bool? value) {
               setState(() {
-                isTemperatureSensor = value ?? false;
+                report.isTemperatureSensor = value ?? false;
               });
-              saveServiceData();
+              report.saveServiceData(CaseID);
             },
           ),
           CheckboxListTile(
             title: Text('On/Off Sensor'),
-            value: isOnOffSensor,
+            value: report.isOnOffSensor,
             onChanged: (bool? value) {
               setState(() {
-                isOnOffSensor = value ?? false;
+                report.isOnOffSensor = value ?? false;
               });
-              saveServiceData();
+              report.saveServiceData(CaseID);
             },
           ),
           CheckboxListTile(
             title: Text('Other'),
-            value: isOtherChecked2,
+            value: report.isOtherChecked2,
             onChanged: (bool? value) {
               setState(() {
-                isOtherChecked2 = value ?? false;
+                report.isOtherChecked2 = value ?? false;
               });
-              saveServiceData();
+              report.saveServiceData(CaseID);
             },
           ),
-          if (isOtherChecked2) // Conditionally display text field for "Other"
+          if (report.isOtherChecked2) // Conditionally display text field for "Other"
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: TextFormField(
                 maxLines: null,
-                controller: otherController2,
+                controller: report.otherController2,
                 decoration: InputDecoration(
                   labelText: 'Specify Other',
                   border: OutlineInputBorder(),
                 ),
-                onChanged: (_) => saveServiceData(),
+                onChanged: (_) => report.saveServiceData(CaseID),
               ),
             ),
         ],
@@ -405,30 +329,16 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   }
 
   // Build vehicle info section with dynamic fields based on API data
-  Widget _buildVehicleInfoSection() {
-    final validVehicles = vehicleData.where((vehicle) {
-      final licenseNo = vehicle['license no.'];
-      return licenseNo != null &&
-          licenseNo != 'null' &&
-          licenseNo.trim().isNotEmpty;
-    }).toList();
+  Widget _buildVehicleInfoSection(FieldServiceReport report) {
+    final validVehicles = [report.vehicleData];
 
     if (validVehicles.isEmpty) {
-      return SizedBox
-          .shrink(); // Return an empty widget if there are no valid vehicles
+      return SizedBox.shrink(); // Return an empty widget if there are no valid vehicles
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (validVehicles.length > 1)
-          const Padding(
-            padding: EdgeInsets.only(bottom: 16.0),
-            child: Text(
-              'Multiple Vehicles',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
         ...validVehicles.asMap().entries.map((entry) {
           int index = entry.key;
           Map<String, String> vehicle = entry.value;
@@ -448,8 +358,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: Text(
                       'Vehicle ${index + 1}',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ...vehicle.entries
@@ -553,7 +462,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   }
 
   // Signature Pad and Actions for Field Service Engineer
-  Widget _buildSignatureSection() {
+  Widget _buildSignatureSection(FieldServiceReport report) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -569,7 +478,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
             borderRadius: BorderRadius.circular(8),
           ),
           child: Signature(
-            controller: _signatureController,
+            controller: report.signatureController,
             backgroundColor: Colors.white,
           ),
         ),
@@ -578,7 +487,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
           children: [
             ElevatedButton(
               onPressed: () {
-                _signatureController.clear(); // Clear the signature
+                report.signatureController.clear(); // Clear the signature
               },
               child: Text('Clear Signature'),
             ),
@@ -588,7 +497,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     );
   }
 
-  Widget _buildSignatureSectionForCustomer() {
+  Widget _buildSignatureSectionForCustomer(FieldServiceReport report) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -602,29 +511,29 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
             Row(
               children: [
                 Checkbox(
-                  value: isServiceCompletedYes,
+                  value: report.isServiceCompletedYes,
                   onChanged: (bool? value) {
                     setState(() {
-                      isServiceCompletedYes = value ?? false;
-                      if (isServiceCompletedYes) {
-                        isServiceCompletedNo = false;
+                      report.isServiceCompletedYes = value ?? false;
+                      if (report.isServiceCompletedYes) {
+                        report.isServiceCompletedNo = false;
                       }
                     });
-                    saveServiceData();
+                    report.saveServiceData(CaseID);
                   },
                 ),
                 Text('YES'),
                 SizedBox(width: 16),
                 Checkbox(
-                  value: isServiceCompletedNo,
+                  value: report.isServiceCompletedNo,
                   onChanged: (bool? value) {
                     setState(() {
-                      isServiceCompletedNo = value ?? false;
-                      if (isServiceCompletedNo) {
-                        isServiceCompletedYes = false;
+                      report.isServiceCompletedNo = value ?? false;
+                      if (report.isServiceCompletedNo) {
+                        report.isServiceCompletedYes = false;
                       }
                     });
-                    saveServiceData();
+                    report.saveServiceData(CaseID);
                   },
                 ),
                 Text('NO'),
@@ -640,7 +549,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
             borderRadius: BorderRadius.circular(8),
           ),
           child: Signature(
-            controller: _customerSignatureController,
+            controller: report.customerSignatureController,
             backgroundColor: Colors.white,
           ),
         ),
@@ -649,7 +558,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
           children: [
             ElevatedButton(
               onPressed: () {
-                _customerSignatureController.clear(); // Clear the signature
+                report.customerSignatureController.clear(); // Clear the signature
               },
               child: Text('Clear Signature'),
             ),
@@ -657,5 +566,70 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
         ),
       ],
     );
+  }
+}
+class FieldServiceReport {
+  Map<String, dynamic> customerData;
+  Map<String, String> vehicleData;
+  bool isInstallationChecked = false;
+  bool isReparationChecked = false;
+  bool isRemoveChecked = false;
+  bool isOtherChecked = false;
+  bool isMagneticCardReader = false;
+  bool isFuelSensor = false;
+  bool isTemperatureSensor = false;
+  bool isOnOffSensor = false;
+  bool isOtherChecked2 = false;
+  bool isServiceCompletedYes = false;
+  bool isServiceCompletedNo = false;
+  TextEditingController otherController = TextEditingController();
+  TextEditingController otherController2 = TextEditingController();
+  final SignatureController signatureController = SignatureController(
+    penStrokeWidth: 2,
+    penColor: Colors.black,
+    exportBackgroundColor: Colors.white,
+  );
+  final SignatureController customerSignatureController = SignatureController(
+    penStrokeWidth: 2,
+    penColor: Colors.black,
+    exportBackgroundColor: Colors.white,
+  );
+
+  FieldServiceReport({required this.customerData, required this.vehicleData});
+
+  Future<void> loadServiceData(int caseID) async {
+    final data = await FieldServiceDatabase.instance.getServiceData(caseID);
+    isInstallationChecked = data['is_installation'] == 1;
+    isReparationChecked = data['is_reparation'] == 1;
+    isRemoveChecked = data['is_remove'] == 1;
+    isOtherChecked = data['is_other'] == 1;
+    otherController.text = data['other_text'] ?? '';
+    isMagneticCardReader = data['is_magnetic_card_reader'] == 1;
+    isFuelSensor = data['is_fuel_sensor'] == 1;
+    isTemperatureSensor = data['is_temperature_sensor'] == 1;
+    isOnOffSensor = data['is_on_off_sensor'] == 1;
+    isOtherChecked2 = data['is_other2'] == 1;
+    otherController2.text = data['other_text2'] ?? '';
+    isServiceCompletedYes = data['is_service_completed_yes'] == 1;
+    isServiceCompletedNo = data['is_service_completed_no'] == 1;
+  }
+
+  Future<void> saveServiceData(int caseID) async {
+    final data = {
+      'is_installation': isInstallationChecked ? 1 : null,
+      'is_reparation': isReparationChecked ? 1 : null,
+      'is_remove': isRemoveChecked ? 1 : null,
+      'is_other': isOtherChecked ? 1 : null,
+      'other_text': isOtherChecked ? otherController.text : null,
+      'is_magnetic_card_reader': isMagneticCardReader ? 1 : null,
+      'is_fuel_sensor': isFuelSensor ? 1 : null,
+      'is_temperature_sensor': isTemperatureSensor ? 1 : null,
+      'is_on_off_sensor': isOnOffSensor ? 1 : null,
+      'is_other2': isOtherChecked2 ? 1 : null,
+      'other_text2': isOtherChecked2 ? otherController2.text : null,
+      'is_service_completed_yes': isServiceCompletedYes ? 1 : null,
+      'is_service_completed_no': isServiceCompletedNo ? 1 : null,
+    };
+    await FieldServiceDatabase.instance.saveServiceData(caseID, data);
   }
 }
