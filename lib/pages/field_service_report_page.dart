@@ -72,7 +72,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                     'imei': problem.mobileUnitIncomeId?.toString() ?? '',
                     'sim': problem.mobileUnitSimIncomeId?.toString() ?? '',
                     'model': problem.modelName ?? '',
-                    'action': problem.mainProcessName ?? '',
+                    'detail': problem.mainProcessName ?? '',
                   },
                 ));
               }
