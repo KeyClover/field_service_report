@@ -28,7 +28,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     try {
       final restDataSource = RestDataSource();
       final url = restDataSource.GetAllCasebyId(
-          CaseID: 40001); // noted: I use 40003, 40002, 40001 as an example
+          CaseID: 40003); // noted: I use 40003, 40002, 40001 as an example
       final response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
@@ -104,7 +104,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(14.0),
           child: Column(
             children: [
               ...reports.map((report) {
@@ -130,7 +130,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                     color: HexColor("E0E0E0"),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  padding: EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(14.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -430,7 +430,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               color: Colors.grey[700],
             ),
           ),
-          SizedBox(height: 5), // Add some space between the label and the input
+         const SizedBox(height: 5), // Add some space between the label and the input
           Container(
             decoration: BoxDecoration(
               color: Colors.white, // Inside container color
@@ -446,7 +446,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
-                contentPadding: EdgeInsets.symmetric(
+                contentPadding: const EdgeInsets.symmetric(
                     vertical: 20,
                     horizontal: 16), // Adjust padding inside the field
               ),
@@ -515,7 +515,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               },
               child: Text('Clear Signature'),
             ),
-            SizedBox(width: 18),
+            SizedBox(width: 20),
             ElevatedButton(onPressed: (){
                report.signatureController.clear();
                     
@@ -592,7 +592,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               },
               child: Text('Clear Signature'),
             ),
-            SizedBox(width: 18),
+            SizedBox(width: 20),
             ElevatedButton(
               onPressed: () {
                 report.customerSignatureController.clear();
