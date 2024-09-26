@@ -24,6 +24,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     fetchDataFromApi();
   }
 
+  // This function fetches data from the API and populates the reports list
   Future<void> fetchDataFromApi() async {
     try {
       final restDataSource = RestDataSource();
@@ -41,6 +42,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
           if (testModel.testModelCase != null &&
               testModel.testModelCase!.isNotEmpty) {
             final caseData = testModel.testModelCase![0];
+            // Populate customer data from API response
             Map<String, dynamic> customerData = {
               'customer': caseData.customer ?? '',
               'contact': caseData.contact ?? '',
@@ -61,6 +63,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               if (licenseNo.isNotEmpty &&
                   !uniqueLicenseNumbers.contains(licenseNo)) {
                 uniqueLicenseNumbers.add(licenseNo);
+                // Populate vehicle data from API response
                 reports.add(FieldServiceReport(
                   customerData: customerData,
                   vehicleData: {
@@ -107,6 +110,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
           padding: const EdgeInsets.all(14.0),
           child: Column(
             children: [
+              // Map through reports and build a container for each report
               ...reports.map((report) {
                 return Container(
                   margin: EdgeInsets.only(bottom: 10),
@@ -123,6 +127,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                   ),
                 );
               }).toList(),
+              // If there are reports, add signature sections
               if (reports.isNotEmpty) ...[
                 Container(
                   margin: EdgeInsets.only(bottom: 10),
@@ -150,6 +155,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     );
   }
 
+  // This function builds the main content of the field service report
   Widget _buildFieldServiceReport(FieldServiceReport report) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,6 +173,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
 
         SizedBox(height: 16),
 
+        // Grid view for date, case number, arrival and departure times
         GridView(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -200,7 +207,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     );
   }
 
-  // Build checkboxes for service type selection
+  // This function builds the checkbox section for service type selection
   Widget _buildCheckboxSection(FieldServiceReport report) {
     return Container(
       padding: EdgeInsets.all(16.0),
@@ -212,6 +219,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Service Type', style: TextStyle(fontWeight: FontWeight.bold)),
+          // Checkboxes for different service types
           CheckboxListTile(
             title: Text('Installation'),
             value: report.isInstallationChecked,
@@ -252,6 +260,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               report.saveServiceData(CaseID);
             },
           ),
+          // Text field for specifying other service type
           if (report.isOtherChecked)
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
@@ -270,6 +279,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     );
   }
 
+  // This function builds the checkbox section for tools selection
   Widget _buildCheckboxSection2(FieldServiceReport report) {
     return Container(
       padding: EdgeInsets.all(16.0),
@@ -281,6 +291,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Tools', style: TextStyle(fontWeight: FontWeight.bold)),
+          // Checkboxes for different tools
           CheckboxListTile(
             title: Text('Magnetic Card Reader'),
             value: report.isMagneticCardReader,
@@ -331,8 +342,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               report.saveServiceData(CaseID);
             },
           ),
-          if (report
-              .isOtherChecked2) // Conditionally display text field for "Other"
+          // Text field for specifying other tool
+          if (report.isOtherChecked2)
             Padding(
               padding: const EdgeInsets.only(top: 8.0),
               child: TextFormField(
@@ -350,13 +361,12 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     );
   }
 
-  // Build vehicle info section with dynamic fields based on API data
+  // This function builds the vehicle info section with dynamic fields based on API data
   Widget _buildVehicleInfoSection(FieldServiceReport report) {
     final validVehicles = [report.vehicleData];
 
     if (validVehicles.isEmpty) {
-      return SizedBox
-          .shrink(); // Return an empty widget if there are no valid vehicles
+      return SizedBox.shrink(); // Return an empty widget if there are no valid vehicles
     }
 
     return Column(
@@ -385,6 +395,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                           TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
+                // Build fields for each non-empty vehicle data
                 ...vehicle.entries
                     .where((e) =>
                         e.value != null &&
@@ -485,7 +496,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     );
   }
 
-  // Signature Pad and Actions for Field Service Engineer
+  // This function builds the signature section for the Field Service Engineer
   Widget _buildSignatureSection(FieldServiceReport report) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -516,16 +527,19 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               child: Text('Clear Signature'),
             ),
             SizedBox(width: 20),
-            ElevatedButton(onPressed: (){
-               report.signatureController.clear();
-                    
-            }, child: Text('Save Signature',))
+            ElevatedButton(
+              onPressed: () {
+                report.signatureController.clear();
+              },
+              child: Text('Save Signature'),
+            )
           ],
         ),
       ],
     );
   }
 
+  // This function builds the signature section for the Customer
   Widget _buildSignatureSectionForCustomer(FieldServiceReport report) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -539,6 +553,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
             SizedBox(width: 16),
             Row(
               children: [
+                // Checkbox for "YES" option
                 Checkbox(
                   value: report.isServiceCompletedYes,
                   onChanged: (bool? value) {
@@ -553,6 +568,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                 ),
                 Text('YES'),
                 SizedBox(width: 16),
+                // Checkbox for "NO" option
                 Checkbox(
                   value: report.isServiceCompletedNo,
                   onChanged: (bool? value) {
@@ -571,6 +587,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
           ],
         ),
         SizedBox(height: 8),
+        // Signature pad for customer
         Container(
           height: 150,
           decoration: BoxDecoration(
@@ -587,8 +604,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
           children: [
             ElevatedButton(
               onPressed: () {
-                report.customerSignatureController
-                    .clear(); // Clear the signature
+                report.customerSignatureController.clear(); // Clear the signature
               },
               child: Text('Clear Signature'),
             ),
