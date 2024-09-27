@@ -4,4 +4,9 @@ class RestDataSource {
   String GetAllCasebyId({required int CaseID}){
     return '$baseAPI/Case/GetAllCaseById?CaseID=$CaseID';
   }
+
+  String PostMultiFiles() {
+    return '$baseAPI/FileUpload/PostMultiFiles';
+  }
+
 }

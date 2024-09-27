@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:signature/signature.dart';
@@ -118,7 +119,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                     color: HexColor("E0E0E0"),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  padding: EdgeInsets.all(20),
+                  padding: EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -135,7 +136,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                     color: HexColor("E0E0E0"),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  padding: const EdgeInsets.all(14.0),
+                  padding: const EdgeInsets.all(20.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -160,10 +161,16 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Case: ${CaseID}',
-          style: const TextStyle(fontSize: 20, color: Colors.black),
-        ),
+         Container(
+        
+           child: Center(
+             child: Text(
+                'Case: ${CaseID}',
+                style: const TextStyle(fontSize: 20, color: Colors.black),
+                     ),
+           ),
+         ),
+
         // Customer Information Section - Auto-filled from API
         _buildTextField('Customer', report.customerData['customer']),
         _buildTextField('Contact', report.customerData['contact']),
@@ -366,7 +373,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     final validVehicles = [report.vehicleData];
 
     if (validVehicles.isEmpty) {
-      return SizedBox.shrink(); // Return an empty widget if there are no valid vehicles
+      return SizedBox
+          .shrink(); // Return an empty widget if there are no valid vehicles
     }
 
     return Column(
@@ -436,12 +444,13 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
           Text(
             label, // Label is shown above the TextFormField
             style: TextStyle(
-              fontSize: 16, // Adjust the size of the label
+              fontSize: 12, // Adjust the size of the label
               fontWeight: FontWeight.w500,
               color: Colors.grey[700],
             ),
           ),
-         const SizedBox(height: 5), // Add some space between the label and the input
+          const SizedBox(
+              height: 5), // Add some space between the label and the input
           Container(
             decoration: BoxDecoration(
               color: Colors.white, // Inside container color
@@ -475,7 +484,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
         Text(
           label,
           style: TextStyle(
-              fontSize: 16,
+              fontSize: 12,
               fontWeight: FontWeight.w500,
               color: Colors.grey[700]),
         ),
@@ -604,7 +613,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
           children: [
             ElevatedButton(
               onPressed: () {
-                report.customerSignatureController.clear(); // Clear the signature
+                report.customerSignatureController
+                    .clear(); // Clear the signature
               },
               child: Text('Clear Signature'),
             ),
