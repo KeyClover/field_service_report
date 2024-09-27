@@ -9,4 +9,7 @@ class RestDataSource {
     return '$baseAPI/FileUpload/PostMultiFiles';
   }
 
+  String GetListFile({required int docId}) {
+    return '${baseAPI}FileUpload/GetListFile?docId=$docId';
+  }
 }
