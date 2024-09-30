@@ -5,9 +5,53 @@ import 'package:hexcolor/hexcolor.dart';
 import 'package:signature/signature.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:typed_data';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import '../database/data_result_api.dart';
 import '../models/field_service_model.dart';
 import '../database/field_service_report_SQLite.dart';
+import '../models/signature_image_model.dart';
+import '../models/signature_image_retrieve_model.dart';
+
+class SignatureUploadPost {
+  final int docId;
+  final String imageType;
+  final int createBy;
+  final String? engineer_Signature;
+  final String? customer_Signature;
+
+  SignatureUploadPost({
+    required this.docId,
+    required this.imageType,
+    required this.createBy,
+    this.engineer_Signature,
+    this.customer_Signature,
+  });
+}
+
+Future<void> uploadSignatureToAPI(SignatureUploadPost signatureUploadPost) async {
+  final restDataSource = RestDataSource();
+  final String baseUrl = restDataSource.PostMultiFiles();
+  final Uri apiUrl = Uri.parse('$baseUrl?docId=${signatureUploadPost.docId}&imageType=${signatureUploadPost.imageType}&createBy=${signatureUploadPost.createBy}');
+
+  var request = http.MultipartRequest('POST', apiUrl);
+  
+  if (signatureUploadPost.engineer_Signature != null) {
+    request.fields['engineer_Signature'] = signatureUploadPost.engineer_Signature!;
+  }
+  
+  if (signatureUploadPost.customer_Signature != null) {
+    request.fields['customer_Signature'] = signatureUploadPost.customer_Signature!;
+  }
+
+  var response = await request.send();
+  if (response.statusCode == 200) {
+    print('Signature uploaded successfully');
+  } else {
+    print('Failed to upload signature: ${response.statusCode}');
+  }
+}
 
 class FieldServiceReportPage1 extends StatefulWidget {
   @override
@@ -521,24 +565,30 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
             border: Border.all(color: Colors.grey),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Signature(
-            controller: report.signatureController,
-            backgroundColor: Colors.white,
-          ),
+          child: report.engineerSignatureImage != null
+              ? Image.memory(report.engineerSignatureImage!)
+              : Signature(
+                  controller: report.signatureController,
+                  backgroundColor: Colors.white,
+                ),
         ),
         SizedBox(height: 16),
         Row(
           children: [
             ElevatedButton(
               onPressed: () {
-                report.signatureController.clear(); // Clear the signature
+                setState(() {
+                  report.signatureController.clear();
+                  report.engineerSignatureImage = null;
+                });
               },
               child: Text('Clear Signature'),
             ),
             SizedBox(width: 20),
             ElevatedButton(
-              onPressed: () {
-                report.signatureController.clear();
+              onPressed: () async {
+                await report.saveSignature(CaseID, true);
+                setState(() {});
               },
               child: Text('Save Signature'),
             )
@@ -603,25 +653,30 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
             border: Border.all(color: Colors.grey),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Signature(
-            controller: report.customerSignatureController,
-            backgroundColor: Colors.white,
-          ),
+          child: report.customerSignatureImage != null
+              ? Image.memory(report.customerSignatureImage!)
+              : Signature(
+                  controller: report.customerSignatureController,
+                  backgroundColor: Colors.white,
+                ),
         ),
         SizedBox(height: 16),
         Row(
           children: [
             ElevatedButton(
               onPressed: () {
-                report.customerSignatureController
-                    .clear(); // Clear the signature
+                setState(() {
+                  report.customerSignatureController.clear();
+                  report.customerSignatureImage = null;
+                });
               },
               child: Text('Clear Signature'),
             ),
             SizedBox(width: 20),
             ElevatedButton(
-              onPressed: () {
-                report.customerSignatureController.clear();
+              onPressed: () async {
+                await report.saveSignature(CaseID, false);
+                setState(() {});
               },
               child: Text('Save Signature'),
             ),
@@ -658,6 +713,8 @@ class FieldServiceReport {
     penColor: Colors.black,
     exportBackgroundColor: Colors.white,
   );
+  Uint8List? engineerSignatureImage;
+  Uint8List? customerSignatureImage;
 
   FieldServiceReport({required this.customerData, required this.vehicleData});
 
@@ -676,6 +733,9 @@ class FieldServiceReport {
     otherController2.text = data['other_text2'] ?? '';
     isServiceCompletedYes = data['is_service_completed_yes'] == 1;
     isServiceCompletedNo = data['is_service_completed_no'] == 1;
+    
+    // Fetch signatures from API
+    await fetchSignatures(caseID);
   }
 
   Future<void> saveServiceData(int caseID) async {
@@ -695,5 +755,49 @@ class FieldServiceReport {
       'is_service_completed_no': isServiceCompletedNo ? 1 : null,
     };
     await FieldServiceDatabase.instance.saveServiceData(caseID, data);
+  }
+
+  Future<void> saveSignature(int CaseID, bool isEngineer) async {
+    final signatureImage = await (isEngineer ? signatureController : customerSignatureController).toPngBytes();
+    if (signatureImage != null) {
+      final base64Signature = base64Encode(signatureImage);
+
+      final signatureUploadPost = SignatureUploadPost(
+        docId: CaseID,
+        imageType: 'Signature',
+        createBy: 1001,
+        engineer_Signature: isEngineer ? base64Signature : null,
+        customer_Signature: isEngineer ? null : base64Signature,
+      );
+
+      await uploadSignatureToAPI(signatureUploadPost);
+
+      // Update the local signature image
+      if (isEngineer) {
+        engineerSignatureImage = signatureImage;
+      } else {
+        customerSignatureImage = signatureImage;
+      }
+    }
+  }
+
+  Future<void> fetchSignatures(int caseID) async {
+    final restDataSource = RestDataSource();
+    final url = restDataSource.GetListFile(docId: caseID);
+    
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final List<SignatureRetrieveModel> signatures = signatureRetrieveModelFromJson(response.body);
+      for (var signature in signatures) {
+        if (signature.engineerSignature != null) {
+          engineerSignatureImage = base64Decode(signature.engineerSignature!);
+        }
+        if (signature.customerSignature != null) {
+          customerSignatureImage = base64Decode(signature.customerSignature!);
+        }
+      }
+    } else {
+      print('Failed to fetch signatures: ${response.statusCode}');
+    }
   }
 }

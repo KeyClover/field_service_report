@@ -12,30 +12,30 @@ class SignatureModel {
     int? docId;
     String? imageType;
     int? createBy;
-    String? engineerSignature;
-    String? customerSignature;
+    String? engineer_Signature;
+    String? customer_Signature;
 
     SignatureModel({
         this.docId,
         this.imageType,
         this.createBy,
-        this.engineerSignature,
-        this.customerSignature,
+        this.engineer_Signature,
+        this.customer_Signature,
     });
 
     factory SignatureModel.fromJson(Map<String, dynamic> json) => SignatureModel(
         docId: json["docId"],
         imageType: json["imageType"],
         createBy: json["createBy"],
-        engineerSignature: json["engineer_Signature"],
-        customerSignature: json["customer_Signature"],
+        engineer_Signature: json["engineer_Signature"],
+        customer_Signature: json["customer_Signature"],
     );
 
     Map<String, dynamic> toJson() => {
         "docId": docId,
         "imageType": imageType,
         "createBy": createBy,
-        "engineer_Signature": engineerSignature,
-        "customer_Signature": customerSignature,
+        "engineer_Signature": engineer_Signature,
+        "customer_Signature": customer_Signature,
     };
 }
