@@ -18,8 +18,8 @@ class SignatureUploadPost {
   final int docId;
   final String imageType;
   final int createBy;
-  final String? engineer_Signature;
-  final String? customer_Signature;
+  final Uint8List? engineer_Signature;
+  final Uint8List? customer_Signature;
 
   SignatureUploadPost({
     required this.docId,
@@ -35,21 +35,41 @@ Future<void> uploadSignatureToAPI(SignatureUploadPost signatureUploadPost) async
   final String baseUrl = restDataSource.PostMultiFiles();
   final Uri apiUrl = Uri.parse('$baseUrl?docId=${signatureUploadPost.docId}&imageType=${signatureUploadPost.imageType}&createBy=${signatureUploadPost.createBy}');
 
+  print('Uploading to URL: $apiUrl');
+
   var request = http.MultipartRequest('POST', apiUrl);
   
   if (signatureUploadPost.engineer_Signature != null) {
-    request.fields['engineer_Signature'] = signatureUploadPost.engineer_Signature!;
+    request.files.add(http.MultipartFile.fromBytes(
+      'engineer_Signature',
+      signatureUploadPost.engineer_Signature!,
+      filename: 'engineer_signature.png',
+    ));
+    print('Engineer signature added to request');
   }
   
   if (signatureUploadPost.customer_Signature != null) {
-    request.fields['customer_Signature'] = signatureUploadPost.customer_Signature!;
+    request.files.add(http.MultipartFile.fromBytes(
+      'customer_Signature',
+      signatureUploadPost.customer_Signature!,
+      filename: 'customer_signature.png',
+    ));
+    print('Customer signature added to request');
   }
 
-  var response = await request.send();
-  if (response.statusCode == 200) {
-    print('Signature uploaded successfully');
-  } else {
-    print('Failed to upload signature: ${response.statusCode}');
+  try {
+    var response = await request.send();
+    final responseBody = await response.stream.bytesToString();
+    print('API Response: $responseBody');
+    
+    if (response.statusCode == 200) {
+      print('Signature uploaded successfully');
+    } else {
+      print('Failed to upload signature. Status code: ${response.statusCode}');
+      print('Response body: $responseBody');
+    }
+  } catch (e) {
+    print('Error during API call: $e');
   }
 }
 
@@ -66,7 +86,11 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   @override
   void initState() {
     super.initState();
-    fetchDataFromApi();
+    fetchDataFromApi().then((_) {
+      if (reports.isNotEmpty) {
+        reports.first.fetchSignatures(CaseID);
+      }
+    });
   }
 
   // This function fetches data from the API and populates the reports list
@@ -758,26 +782,35 @@ class FieldServiceReport {
   }
 
   Future<void> saveSignature(int CaseID, bool isEngineer) async {
+    print('Saving signature for ${isEngineer ? "engineer" : "customer"}');
     final signatureImage = await (isEngineer ? signatureController : customerSignatureController).toPngBytes();
     if (signatureImage != null) {
-      final base64Signature = base64Encode(signatureImage);
-
       final signatureUploadPost = SignatureUploadPost(
         docId: CaseID,
         imageType: 'Signature',
         createBy: 1001,
-        engineer_Signature: isEngineer ? base64Signature : null,
-        customer_Signature: isEngineer ? null : base64Signature,
+        engineer_Signature: isEngineer ? signatureImage : null,
+        customer_Signature: isEngineer ? null : signatureImage,
       );
 
-      await uploadSignatureToAPI(signatureUploadPost);
+      print('Uploading signature to API...');
+      try {
+        await uploadSignatureToAPI(signatureUploadPost);
+        print('Signature uploaded successfully');
 
-      // Update the local signature image
-      if (isEngineer) {
-        engineerSignatureImage = signatureImage;
-      } else {
-        customerSignatureImage = signatureImage;
+        // Update the local signature image
+        if (isEngineer) {
+          engineerSignatureImage = signatureImage;
+          print('Engineer signature updated locally');
+        } else {
+          customerSignatureImage = signatureImage;
+          print('Customer signature updated locally');
+        }
+      } catch (e) {
+        print('Error uploading signature: $e');
       }
+    } else {
+      print('No signature image to save');
     }
   }
 
@@ -789,11 +822,13 @@ class FieldServiceReport {
     if (response.statusCode == 200) {
       final List<SignatureRetrieveModel> signatures = signatureRetrieveModelFromJson(response.body);
       for (var signature in signatures) {
-        if (signature.engineerSignature != null) {
-          engineerSignatureImage = base64Decode(signature.engineerSignature!);
+        if (signature.engineerSignature != null && signature.engineerSignature!.isNotEmpty) {
+          engineerSignatureImage = signature.engineerSignature!;
+          signatureController.clear();
         }
-        if (signature.customerSignature != null) {
-          customerSignatureImage = base64Decode(signature.customerSignature!);
+        if (signature.customerSignature != null && signature.customerSignature!.isNotEmpty) {
+          customerSignatureImage = signature.customerSignature!;
+          customerSignatureController.clear();
         }
       }
     } else {
