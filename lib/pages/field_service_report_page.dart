@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
@@ -6,12 +7,9 @@ import 'package:signature/signature.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:typed_data';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 import '../database/data_result_api.dart';
 import '../models/field_service_model.dart';
 import '../database/field_service_report_SQLite.dart';
-import '../models/signature_image_model.dart';
 import '../models/signature_image_retrieve_model.dart';
 
 class SignatureUploadPost {
@@ -88,10 +86,15 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     super.initState();
     fetchDataFromApi().then((_) {
       if (reports.isNotEmpty) {
-        reports.first.fetchSignatures(CaseID);
+        reports.first.loadServiceData(CaseID).then((stateChanged) {
+          if (stateChanged) {
+            setState(() {});
+          }
+        });
       }
     });
   }
+  
 
   // This function fetches data from the API and populates the reports list
   Future<void> fetchDataFromApi() async {
@@ -742,27 +745,70 @@ class FieldServiceReport {
 
   FieldServiceReport({required this.customerData, required this.vehicleData});
 
-  Future<void> loadServiceData(int caseID) async {
+  Future<bool> loadServiceData(int caseID) async { 
     final data = await FieldServiceDatabase.instance.getServiceData(caseID);
-    isInstallationChecked = data['is_installation'] == 1;
-    isReparationChecked = data['is_reparation'] == 1;
-    isRemoveChecked = data['is_remove'] == 1;
-    isOtherChecked = data['is_other'] == 1;
-    otherController.text = data['other_text'] ?? '';
-    isMagneticCardReader = data['is_magnetic_card_reader'] == 1;
-    isFuelSensor = data['is_fuel_sensor'] == 1;
-    isTemperatureSensor = data['is_temperature_sensor'] == 1;
-    isOnOffSensor = data['is_on_off_sensor'] == 1;
-    isOtherChecked2 = data['is_other2'] == 1;
-    otherController2.text = data['other_text2'] ?? '';
-    isServiceCompletedYes = data['is_service_completed_yes'] == 1;
-    isServiceCompletedNo = data['is_service_completed_no'] == 1;
+    bool stateChanged = false;
+
+    if (isInstallationChecked != (data['is_installation'] == 1)) {
+      isInstallationChecked = data['is_installation'] == 1;
+      stateChanged = true;
+    }
+    if (isReparationChecked != (data['is_reparation'] == 1)) {
+      isReparationChecked = data['is_reparation'] == 1;
+      stateChanged = true;
+    }
+    if (isRemoveChecked != (data['is_remove'] == 1)) {
+      isRemoveChecked = data['is_remove'] == 1;
+      stateChanged = true;
+    }
+    if (isOtherChecked != (data['is_other'] == 1)) {
+      isOtherChecked = data['is_other'] == 1;
+      stateChanged = true;
+    }
+    if (otherController.text != (data['other_text'] ?? '')) {
+      otherController.text = data['other_text'] ?? '';
+      stateChanged = true;
+    }
+    if (isMagneticCardReader != (data['is_magnetic_card_reader'] == 1)) {
+      isMagneticCardReader = data['is_magnetic_card_reader'] == 1;
+      stateChanged = true;
+    }
+    if (isFuelSensor != (data['is_fuel_sensor'] == 1)) {
+      isFuelSensor = data['is_fuel_sensor'] == 1;
+      stateChanged = true;
+    }
+    if (isTemperatureSensor != (data['is_temperature_sensor'] == 1)) {
+      isTemperatureSensor = data['is_temperature_sensor'] == 1;
+      stateChanged = true;
+    }
+    if (isOnOffSensor != (data['is_on_off_sensor'] == 1)) {
+      isOnOffSensor = data['is_on_off_sensor'] == 1;
+      stateChanged = true;
+    }
+    if (isOtherChecked2 != (data['is_other2'] == 1)) {
+      isOtherChecked2 = data['is_other2'] == 1;
+      stateChanged = true;
+    }
+    if (otherController2.text != (data['other_text2'] ?? '')) {
+      otherController2.text = data['other_text2'] ?? '';
+      stateChanged = true;
+    }
+    if (isServiceCompletedYes != (data['is_service_completed_yes'] == 1)) {
+      isServiceCompletedYes = data['is_service_completed_yes'] == 1;
+      stateChanged = true;
+    }
+    if (isServiceCompletedNo != (data['is_service_completed_no'] == 1)) {
+      isServiceCompletedNo = data['is_service_completed_no'] == 1;
+      stateChanged = true;
+    }
     
     // Fetch signatures from API
-    await fetchSignatures(caseID);
+    bool signaturesChanged = await fetchSignatures(caseID);
+    
+    return stateChanged || signaturesChanged;
   }
 
-  Future<void> saveServiceData(int caseID) async {
+  Future<void> saveServiceData(int caseID) async { 
     final data = {
       'is_installation': isInstallationChecked ? 1 : null,
       'is_reparation': isReparationChecked ? 1 : null,
@@ -814,9 +860,10 @@ class FieldServiceReport {
     }
   }
 
-   Future<void> fetchSignatures(int caseID) async {
+   Future<bool> fetchSignatures(int caseID) async {
      final restDataSource = RestDataSource();
      final url = restDataSource.GetListFile(docId: caseID);
+     bool signaturesChanged = false;
 
      print('Fetching signatures from URL: $url');
 
@@ -831,14 +878,22 @@ class FieldServiceReport {
            final List<SignatureRetrieveModel> signatures = jsonList.map((json) => SignatureRetrieveModel.fromJson(json)).toList();
            for (var signature in signatures) {
              if (signature.engineerSignature != null && signature.engineerSignature!.isNotEmpty) {
-               engineerSignatureImage = base64Decode(signature.engineerSignature!);
-               signatureController.clear();
-               print('Engineer signature fetched successfully');
+               final newSignature = base64Decode(signature.engineerSignature!);
+               if (engineerSignatureImage == null || !listEquals(engineerSignatureImage, newSignature)) {
+                 engineerSignatureImage = newSignature;
+                 signatureController.clear();
+                 signaturesChanged = true;
+                 print('Engineer signature fetched successfully');
+               }
              }
              if (signature.customerSignature != null && signature.customerSignature!.isNotEmpty) {
-               customerSignatureImage = base64Decode(signature.customerSignature!);
-               customerSignatureController.clear();
-               print('Customer signature fetched successfully');
+               final newSignature = base64Decode(signature.customerSignature!);
+               if (customerSignatureImage == null || !listEquals(customerSignatureImage, newSignature)) {
+                 customerSignatureImage = newSignature;
+                 customerSignatureController.clear();
+                 signaturesChanged = true;
+                 print('Customer signature fetched successfully');
+               }
              }
            }
          } else {
@@ -851,5 +906,6 @@ class FieldServiceReport {
      } catch (e) {
        print('Error fetching signatures: $e');
      }
+     return signaturesChanged;
    }
 }
