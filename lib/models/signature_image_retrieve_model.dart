@@ -15,10 +15,10 @@ class SignatureRetrieveModel {
     int? fileType;
     int? docId;
     String? imageType;
-    dynamic engineerSignatureName;
-    dynamic engineerSignature;
-    dynamic customerSignatureName;
-    dynamic customerSignature;
+    String? engineerSignatureName;
+    String? engineerSignature;
+    String? customerSignatureName;
+    String? customerSignature;
     DateTime? createDate;
     int? createBy;
 

@@ -814,25 +814,42 @@ class FieldServiceReport {
     }
   }
 
-  Future<void> fetchSignatures(int caseID) async {
-    final restDataSource = RestDataSource();
-    final url = restDataSource.GetListFile(docId: caseID);
-    
-    final response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      final List<SignatureRetrieveModel> signatures = signatureRetrieveModelFromJson(response.body);
-      for (var signature in signatures) {
-        if (signature.engineerSignature != null && signature.engineerSignature!.isNotEmpty) {
-          engineerSignatureImage = signature.engineerSignature!;
-          signatureController.clear();
-        }
-        if (signature.customerSignature != null && signature.customerSignature!.isNotEmpty) {
-          customerSignatureImage = signature.customerSignature!;
-          customerSignatureController.clear();
-        }
-      }
-    } else {
-      print('Failed to fetch signatures: ${response.statusCode}');
-    }
-  }
+   Future<void> fetchSignatures(int caseID) async {
+     final restDataSource = RestDataSource();
+     final url = restDataSource.GetListFile(docId: caseID);
+
+     print('Fetching signatures from URL: $url');
+
+     try {
+       final response = await http.get(Uri.parse(url));
+       print('Response status code: ${response.statusCode}');
+       print('Response body: ${response.body}');
+
+       if (response.statusCode == 200) {
+         final List<dynamic> jsonList = json.decode(response.body);
+         if (jsonList.isNotEmpty) {
+           final List<SignatureRetrieveModel> signatures = jsonList.map((json) => SignatureRetrieveModel.fromJson(json)).toList();
+           for (var signature in signatures) {
+             if (signature.engineerSignature != null && signature.engineerSignature!.isNotEmpty) {
+               engineerSignatureImage = base64Decode(signature.engineerSignature!);
+               signatureController.clear();
+               print('Engineer signature fetched successfully');
+             }
+             if (signature.customerSignature != null && signature.customerSignature!.isNotEmpty) {
+               customerSignatureImage = base64Decode(signature.customerSignature!);
+               customerSignatureController.clear();
+               print('Customer signature fetched successfully');
+             }
+           }
+         } else {
+           print('No signatures found in the response');
+         }
+       } else {
+         print('Failed to fetch signatures: ${response.statusCode}');
+         print('Response body: ${response.body}');
+       }
+     } catch (e) {
+       print('Error fetching signatures: $e');
+     }
+   }
 }

@@ -10,8 +10,8 @@ class RestDataSource {
   }
 
   String GetListFile({required int docId}) {
-    return '${baseAPI}FileUpload/GetListFile?docId=$docId';
+    return '$baseAPI/FileUpload/GetListFile?docId=$docId';
   }
 
-  
+
 }
