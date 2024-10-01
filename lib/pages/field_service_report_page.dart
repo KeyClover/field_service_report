@@ -746,7 +746,7 @@ class FieldServiceReport {
   FieldServiceReport({required this.customerData, required this.vehicleData});
 
   Future<bool> loadServiceData(int caseID) async { 
-    final data = await FieldServiceDatabase.instance.getServiceData(caseID);
+    final data = await FieldServiceDatabase.instance.getServiceData(caseID, vehicleData['license no.'] ?? '');
     bool stateChanged = false;
 
     if (isInstallationChecked != (data['is_installation'] == 1)) {
@@ -824,7 +824,7 @@ class FieldServiceReport {
       'is_service_completed_yes': isServiceCompletedYes ? 1 : null,
       'is_service_completed_no': isServiceCompletedNo ? 1 : null,
     };
-    await FieldServiceDatabase.instance.saveServiceData(caseID, data);
+    await FieldServiceDatabase.instance.saveServiceData(caseID, vehicleData['license no.'] ?? '', data);
   }
 
   Future<void> saveSignature(int CaseID, bool isEngineer) async {

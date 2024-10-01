@@ -17,7 +17,19 @@ class FieldServiceDatabase {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    return await openDatabase(path, version: 1, onCreate: _createDB);
+    return await openDatabase(
+      path, 
+      version: 2, 
+      onCreate: _createDB,
+      onUpgrade: _upgradeDB,
+    );
+  }
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Add the license_no column to the existing table
+      await db.execute('ALTER TABLE service_data ADD COLUMN license_no TEXT NOT NULL DEFAULT ""');
+    }
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -25,6 +37,7 @@ class FieldServiceDatabase {
       CREATE TABLE service_data (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         case_id INTEGER NOT NULL,
+        license_no TEXT NOT NULL,
         is_installation INTEGER,
         is_reparation INTEGER,
         is_remove INTEGER,
@@ -42,28 +55,28 @@ class FieldServiceDatabase {
     ''');
   }
 
-  Future<void> saveServiceData(int caseId, Map<String, dynamic> data) async {
+  Future<void> saveServiceData(int caseId, String licenseNo, Map<String, dynamic> data) async {
     final db = await database;
-    final existingData = await getServiceData(caseId);
+    final existingData = await getServiceData(caseId, licenseNo);
     
     if (existingData.isEmpty) {
-      await db.insert('service_data', {...data, 'case_id': caseId});
+      await db.insert('service_data', {...data, 'case_id': caseId, 'license_no': licenseNo});
     } else {
       await db.update(
         'service_data',
-        {...data, 'case_id': caseId},
-        where: 'case_id = ?',
-        whereArgs: [caseId],
+        {...data, 'case_id': caseId, 'license_no': licenseNo},
+        where: 'case_id = ? AND license_no = ?',
+        whereArgs: [caseId, licenseNo],
       );
     }
   }
 
-  Future<Map<String, dynamic>> getServiceData(int caseId) async {
+  Future<Map<String, dynamic>> getServiceData(int caseId, String licenseNo) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
       'service_data',
-      where: 'case_id = ?',
-      whereArgs: [caseId],
+      where: 'case_id = ? AND license_no = ?',
+      whereArgs: [caseId, licenseNo],
     );
 
     if (maps.isNotEmpty) {
