@@ -28,15 +28,17 @@ class SignatureUploadPost {
   });
 }
 
-Future<void> uploadSignatureToAPI(SignatureUploadPost signatureUploadPost) async {
+Future<void> uploadSignatureToAPI(
+    SignatureUploadPost signatureUploadPost) async {
   final restDataSource = RestDataSource();
   final String baseUrl = restDataSource.PostMultiFiles();
-  final Uri apiUrl = Uri.parse('$baseUrl?docId=${signatureUploadPost.docId}&imageType=${signatureUploadPost.imageType}&createBy=${signatureUploadPost.createBy}');
+  final Uri apiUrl = Uri.parse(
+      '$baseUrl?docId=${signatureUploadPost.docId}&imageType=${signatureUploadPost.imageType}&createBy=${signatureUploadPost.createBy}');
 
   print('Uploading to URL: $apiUrl');
 
   var request = http.MultipartRequest('POST', apiUrl);
-  
+
   if (signatureUploadPost.engineer_Signature != null) {
     request.files.add(http.MultipartFile.fromBytes(
       'engineer_Signature',
@@ -45,7 +47,7 @@ Future<void> uploadSignatureToAPI(SignatureUploadPost signatureUploadPost) async
     ));
     print('Engineer signature added to request');
   }
-  
+
   if (signatureUploadPost.customer_Signature != null) {
     request.files.add(http.MultipartFile.fromBytes(
       'customer_Signature',
@@ -59,7 +61,7 @@ Future<void> uploadSignatureToAPI(SignatureUploadPost signatureUploadPost) async
     var response = await request.send();
     final responseBody = await response.stream.bytesToString();
     print('API Response: $responseBody');
-    
+
     if (response.statusCode == 200) {
       print('Signature uploaded successfully');
     } else {
@@ -94,7 +96,6 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
       }
     });
   }
-  
 
   // This function fetches data from the API and populates the reports list
   Future<void> fetchDataFromApi() async {
@@ -171,9 +172,17 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Field Service : ${CaseID} ',
-          style: TextStyle(fontSize: 20, color: Colors.white),
+        title: Column(
+          children: [
+            Align(
+              alignment: Alignment.center,
+              child: Text(
+                'Field Service : ${CaseID} ',
+                style: const TextStyle(fontSize: 22, color: Colors.white, ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
         ),
         backgroundColor: HexColor("#2e3150"),
       ),
@@ -185,12 +194,12 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               // Map through reports and build a container for each report
               ...reports.map((report) {
                 return Container(
-                  margin: EdgeInsets.only(bottom: 10),
+                  margin: const EdgeInsets.only(bottom: 10),
                   decoration: BoxDecoration(
                     color: HexColor("E0E0E0"),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -202,7 +211,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               // If there are reports, add signature sections
               if (reports.isNotEmpty) ...[
                 Container(
-                  margin: EdgeInsets.only(bottom: 10),
+                  margin: const EdgeInsets.only(bottom: 10),
                   decoration: BoxDecoration(
                     color: HexColor("E0E0E0"),
                     borderRadius: BorderRadius.circular(20),
@@ -211,9 +220,9 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       _buildSignatureSection(reports.first),
-                      SizedBox(height: 20),
+                      const SizedBox(height: 20),
                       _buildSignatureSectionForCustomer(reports.first),
                     ],
                   ),
@@ -232,15 +241,12 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-         Container(
-        
-           child: Center(
-             child: Text(
-                'Case: ${CaseID}',
-                style: const TextStyle(fontSize: 20, color: Colors.black),
-                     ),
-           ),
-         ),
+        Center(
+          child: Text(
+            'Case: ${CaseID}',
+            style: const TextStyle(fontSize: 20, color: Colors.black),
+          ),
+        ),
 
         // Customer Information Section - Auto-filled from API
         _buildTextField('Customer', report.customerData['customer']),
@@ -249,7 +255,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
         _buildTextField('Tel', report.customerData['tel']),
         _buildTextField('Email', report.customerData['customer email']),
 
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
 
         // Grid view for date, case number, arrival and departure times
         GridView(
@@ -270,16 +276,16 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
           ],
         ),
 
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         _buildCheckboxSection(report),
 
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         _buildCheckboxSection2(report),
 
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         _buildVehicleInfoSection(report),
 
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         _buildTextField('Remark', report.customerData['remark']),
       ],
     );
@@ -288,7 +294,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   // This function builds the checkbox section for service type selection
   Widget _buildCheckboxSection(FieldServiceReport report) {
     return Container(
-      padding: EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.0),
@@ -299,7 +305,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Service Type', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('Service Type',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ElevatedButton(
                 onPressed: () {
                   setState(() {
@@ -314,13 +321,20 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                   });
                   report.saveServiceData(CaseID);
                 },
-                child: Text('Select All'),
+                child: const Text('Select All'),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: HexColor("#2e3150"),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                ),
               ),
             ],
           ),
           // Checkboxes for different service types
           CheckboxListTile(
-            title: Text('Installation'),
+            title: const Text('Installation'),
             value: report.isInstallationChecked,
             onChanged: (bool? value) {
               setState(() {
@@ -330,7 +344,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
             },
           ),
           CheckboxListTile(
-            title: Text('Reparation'),
+            title: const Text('Reparation'),
             value: report.isReparationChecked,
             onChanged: (bool? value) {
               setState(() {
@@ -340,7 +354,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
             },
           ),
           CheckboxListTile(
-            title: Text('Remove & Reinstall'),
+            title: const Text('Remove & Reinstall'),
             value: report.isRemoveChecked,
             onChanged: (bool? value) {
               setState(() {
@@ -350,7 +364,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
             },
           ),
           CheckboxListTile(
-            title: Text('Other'),
+            title: const Text('Other'),
             value: report.isOtherChecked,
             onChanged: (bool? value) {
               setState(() {
@@ -366,7 +380,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               child: TextFormField(
                 controller: report.otherController,
                 maxLines: null,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Specify Other',
                   border: OutlineInputBorder(),
                 ),
@@ -381,7 +395,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
   // This function builds the checkbox section for tools selection
   Widget _buildCheckboxSection2(FieldServiceReport report) {
     return Container(
-      padding: EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.0),
@@ -392,7 +406,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Tools', style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text('Tools',
+                  style: TextStyle(fontSize: 16 ,fontWeight: FontWeight.bold)),
               ElevatedButton(
                 onPressed: () {
                   setState(() {
@@ -409,13 +424,20 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                   });
                   report.saveServiceData(CaseID);
                 },
-                child: Text('Select All'),
+                child: const Text('Select All'),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: HexColor("#2e3150"),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                ),
               ),
             ],
           ),
           // Checkboxes for different tools
           CheckboxListTile(
-            title: Text('Magnetic Card Reader'),
+            title: const Text('Magnetic Card Reader'),
             value: report.isMagneticCardReader,
             onChanged: (bool? value) {
               setState(() {
@@ -425,7 +447,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
             },
           ),
           CheckboxListTile(
-            title: Text('Fuel Sensor'),
+            title: const Text('Fuel Sensor'),
             value: report.isFuelSensor,
             onChanged: (bool? value) {
               setState(() {
@@ -435,7 +457,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
             },
           ),
           CheckboxListTile(
-            title: Text('Temperature Sensor'),
+            title: const Text('Temperature Sensor'),
             value: report.isTemperatureSensor,
             onChanged: (bool? value) {
               setState(() {
@@ -445,7 +467,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
             },
           ),
           CheckboxListTile(
-            title: Text('On/Off Sensor'),
+            title: const Text('On/Off Sensor'),
             value: report.isOnOffSensor,
             onChanged: (bool? value) {
               setState(() {
@@ -455,7 +477,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
             },
           ),
           CheckboxListTile(
-            title: Text('Other'),
+            title: const Text('Other'),
             value: report.isOtherChecked2,
             onChanged: (bool? value) {
               setState(() {
@@ -471,7 +493,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               child: TextFormField(
                 maxLines: null,
                 controller: report.otherController2,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Specify Other',
                   border: OutlineInputBorder(),
                 ),
@@ -488,7 +510,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
     final validVehicles = [report.vehicleData];
 
     if (validVehicles.isEmpty) {
-      return SizedBox
+      return const SizedBox
           .shrink(); // Return an empty widget if there are no valid vehicles
     }
 
@@ -499,8 +521,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
           int index = entry.key;
           Map<String, String> vehicle = entry.value;
           return Container(
-            margin: EdgeInsets.symmetric(vertical: 16.0),
-            padding: EdgeInsets.all(16.0),
+            margin: const EdgeInsets.symmetric(vertical: 16.0),
+            padding: const EdgeInsets.all(16.0),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(8.0),
@@ -514,8 +536,8 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: Text(
                       'Vehicle ${index + 1}',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
                 // Build fields for each non-empty vehicle data
@@ -627,11 +649,11 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
       children: [
         const Text(
           'Field Service Engineer Signature',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Container(
-          height: 150,
+          height: 200,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
           ),
@@ -647,8 +669,9 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                   backgroundColor: Colors.white,
                 ),
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ElevatedButton(
               onPressed: () {
@@ -657,15 +680,34 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                   report.engineerSignatureImage = null;
                 });
               },
-              child: Text('Clear Signature'),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.red[400],
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(13),
+                ),
+              ),
+              child:
+                  const Text('Clear Signature', style: TextStyle(fontSize: 16)),
             ),
-            SizedBox(width: 20),
             ElevatedButton(
               onPressed: () async {
                 await report.saveSignature(CaseID, true);
                 setState(() {});
               },
-              child: Text('Save Signature'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green[400],
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(13),
+                ),
+              ),
+              child:
+                  const Text('Save Signature', style: TextStyle(fontSize: 16)),
             )
           ],
         ),
@@ -682,9 +724,9 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
           children: [
             const Text(
               'Service Completed',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            SizedBox(width: 16),
+            const SizedBox(width: 16),
             Row(
               children: [
                 // Checkbox for "YES" option
@@ -700,8 +742,11 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                     report.saveServiceData(CaseID);
                   },
                 ),
-                Text('YES'),
-                SizedBox(width: 16),
+                const Text(
+                  'YES',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                const SizedBox(width: 12),
                 // Checkbox for "NO" option
                 Checkbox(
                   value: report.isServiceCompletedNo,
@@ -715,15 +760,18 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                     report.saveServiceData(CaseID);
                   },
                 ),
-                Text('NO'),
+                const Text(
+                  'NO',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
               ],
             ),
           ],
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         // Signature pad for customer
         Container(
-          height: 150,
+          height: 200,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
           ),
@@ -731,7 +779,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
               ? Center(
                   child: Image.memory(
                     report.customerSignatureImage!,
-                    fit: BoxFit.contain,
+                    fit: BoxFit.cover,
                   ),
                 )
               : Signature(
@@ -739,8 +787,9 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                   backgroundColor: Colors.white,
                 ),
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ElevatedButton(
               onPressed: () {
@@ -749,15 +798,34 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                   report.customerSignatureImage = null;
                 });
               },
-              child: Text('Clear Signature'),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.red[400],
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(13),
+                ),
+              ),
+              child:
+                  const Text('Clear Signature', style: TextStyle(fontSize: 16)),
             ),
-            SizedBox(width: 20),
             ElevatedButton(
               onPressed: () async {
                 await report.saveSignature(CaseID, false);
                 setState(() {});
               },
-              child: Text('Save Signature'),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.green[400],
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(13),
+                ),
+              ),
+              child:
+                  const Text('Save Signature', style: TextStyle(fontSize: 16)),
             ),
           ],
         ),
@@ -797,8 +865,9 @@ class FieldServiceReport {
 
   FieldServiceReport({required this.customerData, required this.vehicleData});
 
-  Future<bool> loadServiceData(int caseID) async { 
-    final data = await FieldServiceDatabase.instance.getServiceData(caseID, vehicleData['license no.'] ?? '');
+  Future<bool> loadServiceData(int caseID) async {
+    final data = await FieldServiceDatabase.instance
+        .getServiceData(caseID, vehicleData['license no.'] ?? '');
     bool stateChanged = false;
 
     if (isInstallationChecked != (data['is_installation'] == 1)) {
@@ -853,14 +922,14 @@ class FieldServiceReport {
       isServiceCompletedNo = data['is_service_completed_no'] == 1;
       stateChanged = true;
     }
-    
+
     // Fetch signatures from API
     bool signaturesChanged = await fetchSignatures(caseID);
-    
+
     return stateChanged || signaturesChanged;
   }
 
-  Future<void> saveServiceData(int caseID) async { 
+  Future<void> saveServiceData(int caseID) async {
     final data = {
       'is_installation': isInstallationChecked ? 1 : null,
       'is_reparation': isReparationChecked ? 1 : null,
@@ -876,12 +945,15 @@ class FieldServiceReport {
       'is_service_completed_yes': isServiceCompletedYes ? 1 : null,
       'is_service_completed_no': isServiceCompletedNo ? 1 : null,
     };
-    await FieldServiceDatabase.instance.saveServiceData(caseID, vehicleData['license no.'] ?? '', data);
+    await FieldServiceDatabase.instance
+        .saveServiceData(caseID, vehicleData['license no.'] ?? '', data);
   }
 
   Future<void> saveSignature(int CaseID, bool isEngineer) async {
     print('Saving signature for ${isEngineer ? "engineer" : "customer"}');
-    final signatureImage = await (isEngineer ? signatureController : customerSignatureController).toPngBytes();
+    final signatureImage =
+        await (isEngineer ? signatureController : customerSignatureController)
+            .toPngBytes();
     if (signatureImage != null) {
       final signatureUploadPost = SignatureUploadPost(
         docId: CaseID,
@@ -912,52 +984,58 @@ class FieldServiceReport {
     }
   }
 
-   Future<bool> fetchSignatures(int caseID) async {
-     final restDataSource = RestDataSource();
-     final url = restDataSource.GetListFile(docId: caseID);
-     bool signaturesChanged = false;
+  Future<bool> fetchSignatures(int caseID) async {
+    final restDataSource = RestDataSource();
+    final url = restDataSource.GetListFile(docId: caseID);
+    bool signaturesChanged = false;
 
-     print('Fetching signatures from URL: $url');
+    print('Fetching signatures from URL: $url');
 
-     try {
-       final response = await http.get(Uri.parse(url));
-       print('Response status code: ${response.statusCode}');
-       print('Response body: ${response.body}');
+    try {
+      final response = await http.get(Uri.parse(url));
+      print('Response status code: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
-       if (response.statusCode == 200) {
-         final List<dynamic> jsonList = json.decode(response.body);
-         if (jsonList.isNotEmpty) {
-           final List<SignatureRetrieveModel> signatures = jsonList.map((json) => SignatureRetrieveModel.fromJson(json)).toList();
-           for (var signature in signatures) {
-             if (signature.engineerSignature != null && signature.engineerSignature!.isNotEmpty) {
-               final newSignature = base64Decode(signature.engineerSignature!);
-               if (engineerSignatureImage == null || !listEquals(engineerSignatureImage, newSignature)) {
-                 engineerSignatureImage = newSignature;
-                 signatureController.clear();
-                 signaturesChanged = true;
-                 print('Engineer signature fetched successfully');
-               }
-             }
-             if (signature.customerSignature != null && signature.customerSignature!.isNotEmpty) {
-               final newSignature = base64Decode(signature.customerSignature!);
-               if (customerSignatureImage == null || !listEquals(customerSignatureImage, newSignature)) {
-                 customerSignatureImage = newSignature;
-                 customerSignatureController.clear();
-                 signaturesChanged = true;
-                 print('Customer signature fetched successfully');
-               }
-             }
-           }
-         } else {
-           print('No signatures found in the response');
-         }
-       } else {
-         print('Failed to fetch signatures: ${response.statusCode}');
-         print('Response body: ${response.body}');
-       }
-     } catch (e) {
-       print('Error fetching signatures: $e');
-     }
-     return signaturesChanged;
-   }
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList = json.decode(response.body);
+        if (jsonList.isNotEmpty) {
+          final List<SignatureRetrieveModel> signatures = jsonList
+              .map((json) => SignatureRetrieveModel.fromJson(json))
+              .toList();
+          for (var signature in signatures) {
+            if (signature.engineerSignature != null &&
+                signature.engineerSignature!.isNotEmpty) {
+              final newSignature = base64Decode(signature.engineerSignature!);
+              if (engineerSignatureImage == null ||
+                  !listEquals(engineerSignatureImage, newSignature)) {
+                engineerSignatureImage = newSignature;
+                signatureController.clear();
+                signaturesChanged = true;
+                print('Engineer signature fetched successfully');
+              }
+            }
+            if (signature.customerSignature != null &&
+                signature.customerSignature!.isNotEmpty) {
+              final newSignature = base64Decode(signature.customerSignature!);
+              if (customerSignatureImage == null ||
+                  !listEquals(customerSignatureImage, newSignature)) {
+                customerSignatureImage = newSignature;
+                customerSignatureController.clear();
+                signaturesChanged = true;
+                print('Customer signature fetched successfully');
+              }
+            }
+          }
+        } else {
+          print('No signatures found in the response');
+        }
+      } else {
+        print('Failed to fetch signatures: ${response.statusCode}');
+        print('Response body: ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching signatures: $e');
+    }
+    return signaturesChanged;
+  }
 }
