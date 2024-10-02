@@ -296,7 +296,28 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Service Type', style: TextStyle(fontWeight: FontWeight.bold)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Service Type', style: TextStyle(fontWeight: FontWeight.bold)),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    bool allChecked = report.isInstallationChecked &&
+                        report.isReparationChecked &&
+                        report.isRemoveChecked &&
+                        report.isOtherChecked;
+                    report.isInstallationChecked = !allChecked;
+                    report.isReparationChecked = !allChecked;
+                    report.isRemoveChecked = !allChecked;
+                    report.isOtherChecked = !allChecked;
+                  });
+                  report.saveServiceData(CaseID);
+                },
+                child: Text('Select All'),
+              ),
+            ],
+          ),
           // Checkboxes for different service types
           CheckboxListTile(
             title: Text('Installation'),
@@ -368,7 +389,30 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Tools', style: TextStyle(fontWeight: FontWeight.bold)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Tools', style: TextStyle(fontWeight: FontWeight.bold)),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    bool allChecked = report.isMagneticCardReader &&
+                        report.isFuelSensor &&
+                        report.isTemperatureSensor &&
+                        report.isOnOffSensor &&
+                        report.isOtherChecked2;
+                    report.isMagneticCardReader = !allChecked;
+                    report.isFuelSensor = !allChecked;
+                    report.isTemperatureSensor = !allChecked;
+                    report.isOnOffSensor = !allChecked;
+                    report.isOtherChecked2 = !allChecked;
+                  });
+                  report.saveServiceData(CaseID);
+                },
+                child: Text('Select All'),
+              ),
+            ],
+          ),
           // Checkboxes for different tools
           CheckboxListTile(
             title: Text('Magnetic Card Reader'),
@@ -589,11 +633,15 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
         Container(
           height: 150,
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
             borderRadius: BorderRadius.circular(8),
           ),
           child: report.engineerSignatureImage != null
-              ? Image.memory(report.engineerSignatureImage!)
+              ? Center(
+                  child: Image.memory(
+                    report.engineerSignatureImage!,
+                    fit: BoxFit.contain,
+                  ),
+                )
               : Signature(
                   controller: report.signatureController,
                   backgroundColor: Colors.white,
@@ -677,11 +725,15 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
         Container(
           height: 150,
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
             borderRadius: BorderRadius.circular(8),
           ),
           child: report.customerSignatureImage != null
-              ? Image.memory(report.customerSignatureImage!)
+              ? Center(
+                  child: Image.memory(
+                    report.customerSignatureImage!,
+                    fit: BoxFit.contain,
+                  ),
+                )
               : Signature(
                   controller: report.customerSignatureController,
                   backgroundColor: Colors.white,
