@@ -684,13 +684,13 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                 foregroundColor: Colors.white,
                 backgroundColor: Colors.red[400],
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(13),
                 ),
               ),
               child:
-                  const Text('Clear Signature', style: TextStyle(fontSize: 16)),
+                  const Text('Clear Signature', style: TextStyle(fontSize: 14)),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -701,13 +701,13 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                 backgroundColor: Colors.green[400],
                 foregroundColor: Colors.white,
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(13),
                 ),
               ),
               child:
-                  const Text('Save Signature', style: TextStyle(fontSize: 16)),
+                  const Text('Save Signature', style: TextStyle(fontSize: 14)),
             )
           ],
         ),
@@ -802,13 +802,13 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                 foregroundColor: Colors.white,
                 backgroundColor: Colors.red[400],
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(13),
                 ),
               ),
               child:
-                  const Text('Clear Signature', style: TextStyle(fontSize: 16)),
+                  const Text('Clear Signature', style: TextStyle(fontSize: 14)),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -819,13 +819,13 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
                 foregroundColor: Colors.white,
                 backgroundColor: Colors.green[400],
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(13),
                 ),
               ),
               child:
-                  const Text('Save Signature', style: TextStyle(fontSize: 16)),
+                  const Text('Save Signature', style: TextStyle(fontSize: 14)),
             ),
           ],
         ),
