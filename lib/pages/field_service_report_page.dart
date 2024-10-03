@@ -107,14 +107,14 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
-        final testModel = TestModel.fromJson(jsonData);
+        final caseModel = CaseModel.fromJson(jsonData);
 
         setState(() {
-          CaseID = testModel.caseId ?? 0;
+          CaseID = caseModel.caseId ?? 0;
 
-          if (testModel.testModelCase != null &&
-              testModel.testModelCase!.isNotEmpty) {
-            final caseData = testModel.testModelCase![0];
+          if (caseModel.caseModelCase != null &&
+              caseModel.caseModelCase!.isNotEmpty) {
+            final caseData = caseModel.caseModelCase![0];
             // Populate customer data from API response
             Map<String, dynamic> customerData = {
               'customer': caseData.customer ?? '',
@@ -131,7 +131,7 @@ class _FieldServiceReportPage1State extends State<FieldServiceReportPage1> {
 
             // Create a FieldServiceReport for each unique license number
             Set<String> uniqueLicenseNumbers = Set();
-            testModel.problem?.forEach((problem) {
+            caseModel.problem?.forEach((problem) {
               String licenseNo = problem.licenseNo ?? '';
               if (licenseNo.isNotEmpty &&
                   !uniqueLicenseNumbers.contains(licenseNo)) {
